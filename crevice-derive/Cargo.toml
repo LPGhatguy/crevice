@@ -7,7 +7,6 @@ authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 documentation = "https://docs.rs/crevice-derive"
 homepage = "https://github.com/LPGhatguy/crevice"
 repository = "https://github.com/LPGhatguy/crevice"
-readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [lib]

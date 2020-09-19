@@ -17,7 +17,7 @@ license = "MIT OR Apache-2.0"
 members = ["crevice-derive"]
 
 [dependencies]
-crevice-derive = { path = "crevice-derive" }
+crevice-derive = { version = "0.1.0", path = "crevice-derive" }
 
 type-layout = { version = "0.2.0", features = ["serde1"] }
 bytemuck = "1.4.1"
