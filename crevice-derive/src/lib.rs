@@ -46,7 +46,7 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
 
                 ::crevice::internal::align_offset(
                     offset,
-                    ::std::mem::align_of::<<<#field_ty as ::crevice::std140::AsStd140>::Std140Type as ::crevice::std140::Std140>::Alignment>()
+                    <<#field_ty as ::crevice::std140::AsStd140>::Std140Type as ::crevice::std140::Std140>::ALIGNMENT
                 )
             }
         });
@@ -79,7 +79,7 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
         unsafe impl #impl_generics ::crevice::bytemuck::Pod for #std140_name #ty_generics #where_clause {}
 
         unsafe impl #impl_generics ::crevice::std140::Std140 for #std140_name #ty_generics #where_clause {
-            type Alignment = ::crevice::alignment::Align16;
+            const ALIGNMENT: usize = 16;
         }
 
         impl #impl_generics ::crevice::std140::AsStd140 for #name #ty_generics #where_clause {

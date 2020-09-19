@@ -57,7 +57,6 @@ Crevice supports Rust 1.46.0 and newer due to use of new `const fn` features.
 pub use bytemuck;
 pub use type_layout;
 
-pub mod alignment;
 pub mod std140;
 
 #[doc(hidden)]

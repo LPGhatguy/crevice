@@ -1,11 +1,9 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::alignment::{Align16, Align4, Align8};
-
 pub use crevice_derive::AsStd140;
 
 pub unsafe trait Std140: Copy + Zeroable + Pod {
-    type Alignment;
+    const ALIGNMENT: usize;
 }
 
 pub trait AsStd140 {
@@ -26,19 +24,19 @@ where
 }
 
 unsafe impl Std140 for f32 {
-    type Alignment = Align4;
+    const ALIGNMENT: usize = 4;
 }
 
 unsafe impl Std140 for f64 {
-    type Alignment = Align8;
+    const ALIGNMENT: usize = 8;
 }
 
 unsafe impl Std140 for i32 {
-    type Alignment = Align4;
+    const ALIGNMENT: usize = 4;
 }
 
 unsafe impl Std140 for u32 {
-    type Alignment = Align4;
+    const ALIGNMENT: usize = 4;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -51,7 +49,7 @@ unsafe impl Zeroable for Vec2 {}
 unsafe impl Pod for Vec2 {}
 
 unsafe impl Std140 for Vec2 {
-    type Alignment = Align8;
+    const ALIGNMENT: usize = 8;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -65,7 +63,7 @@ unsafe impl Zeroable for Vec3 {}
 unsafe impl Pod for Vec3 {}
 
 unsafe impl Std140 for Vec3 {
-    type Alignment = Align16;
+    const ALIGNMENT: usize = 16;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -80,7 +78,7 @@ unsafe impl Zeroable for Vec4 {}
 unsafe impl Pod for Vec4 {}
 
 unsafe impl Std140 for Vec4 {
-    type Alignment = Align16;
+    const ALIGNMENT: usize = 16;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -94,7 +92,7 @@ unsafe impl Zeroable for Mat2 {}
 unsafe impl Pod for Mat2 {}
 
 unsafe impl Std140 for Mat2 {
-    type Alignment = Align16;
+    const ALIGNMENT: usize = 16;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -110,7 +108,7 @@ unsafe impl Zeroable for Mat3 {}
 unsafe impl Pod for Mat3 {}
 
 unsafe impl Std140 for Mat3 {
-    type Alignment = Align16;
+    const ALIGNMENT: usize = 16;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -125,5 +123,5 @@ unsafe impl Zeroable for Mat4 {}
 unsafe impl Pod for Mat4 {}
 
 unsafe impl Std140 for Mat4 {
-    type Alignment = Align16;
+    const ALIGNMENT: usize = 16;
 }
