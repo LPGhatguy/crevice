@@ -11,7 +11,7 @@ struct PrimitiveF32 {
 
 #[test]
 fn primitive_f32() {
-    assert_yaml_snapshot!(<<PrimitiveF32 as AsStd140>::Std140Type as TypeLayout>::layout());
+    assert_yaml_snapshot!(<<PrimitiveF32 as AsStd140>::Std140Type as TypeLayout>::type_layout());
 
     let value = PrimitiveF32 { x: 1.0, y: 2.0 };
     let _value_std140 = value.as_std140();
@@ -25,7 +25,7 @@ struct TestVec3 {
 
 #[test]
 fn test_vec3() {
-    assert_yaml_snapshot!(<<TestVec3 as AsStd140>::Std140Type as TypeLayout>::layout());
+    assert_yaml_snapshot!(<<TestVec3 as AsStd140>::Std140Type as TypeLayout>::type_layout());
 
     let value = TestVec3 {
         pos: Vec3 {
@@ -50,7 +50,9 @@ struct UsingVec3Padding {
 
 #[test]
 fn using_vec3_padding() {
-    assert_yaml_snapshot!(<<UsingVec3Padding as AsStd140>::Std140Type as TypeLayout>::layout());
+    assert_yaml_snapshot!(
+        <<UsingVec3Padding as AsStd140>::Std140Type as TypeLayout>::type_layout()
+    );
 
     let value = UsingVec3Padding {
         pos: Vec3 {
