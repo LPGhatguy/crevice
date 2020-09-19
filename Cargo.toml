@@ -19,7 +19,7 @@ members = ["crevice-derive"]
 [dependencies]
 crevice-derive = { path = "crevice-derive" }
 
-type-layout = { git = "https://github.com/LPGhatguy/type-layout", branch = "main", features = ["serde1"] }
+type-layout = { version = "0.2.0", features = ["serde1"] }
 bytemuck = "1.4.1"
 mint = "0.5.5"
 
