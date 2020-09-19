@@ -1,0 +1,28 @@
+[package]
+name = "crevice"
+description = "Create GLSL-compatible versions of structs with explicitly-initialized padding"
+version = "0.1.0"
+edition = "2018"
+authors = ["Lucien Greathouse <me@lpghatguy.com>"]
+documentation = "https://docs.rs/crevice"
+homepage = "https://github.com/LPGhatguy/crevice"
+repository = "https://github.com/LPGhatguy/crevice"
+readme = "README.md"
+keywords = ["glsl", "std140", "std430"]
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = ["crevice-derive"]
+
+[dependencies]
+crevice-derive = { path = "crevice-derive" }
+
+type-layout = { git = "https://github.com/LPGhatguy/type-layout", rev = "main", features=["serde1"] }
+bytemuck = "1.4.1"
+mint = "0.5.5"
+
+[dev-dependencies]
+insta = "0.16.1"
+cgmath = { version = "0.17.0", features = ["mint"] }

@@ -1,0 +1,64 @@
+use insta::assert_yaml_snapshot;
+use type_layout::TypeLayout;
+
+use crevice::std140::{AsStd140, Vec3};
+
+#[derive(AsStd140)]
+struct PrimitiveF32 {
+    x: f32,
+    y: f32,
+}
+
+#[test]
+fn primitive_f32() {
+    assert_yaml_snapshot!(<<PrimitiveF32 as AsStd140>::Std140Type as TypeLayout>::layout());
+
+    let value = PrimitiveF32 { x: 1.0, y: 2.0 };
+    let _value_std140 = value.as_std140();
+}
+
+#[derive(AsStd140)]
+struct TestVec3 {
+    pos: Vec3,
+    velocity: Vec3,
+}
+
+#[test]
+fn test_vec3() {
+    assert_yaml_snapshot!(<<TestVec3 as AsStd140>::Std140Type as TypeLayout>::layout());
+
+    let value = TestVec3 {
+        pos: Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        },
+        velocity: Vec3 {
+            x: 4.0,
+            y: 5.0,
+            z: 6.0,
+        },
+    };
+    let _value_std140 = value.as_std140();
+}
+
+#[derive(AsStd140)]
+struct UsingVec3Padding {
+    pos: Vec3,
+    brightness: f32,
+}
+
+#[test]
+fn using_vec3_padding() {
+    assert_yaml_snapshot!(<<UsingVec3Padding as AsStd140>::Std140Type as TypeLayout>::layout());
+
+    let value = UsingVec3Padding {
+        pos: Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        },
+        brightness: 4.0,
+    };
+    let _value_std140 = value.as_std140();
+}
