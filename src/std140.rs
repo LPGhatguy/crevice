@@ -29,6 +29,18 @@ unsafe impl Std140 for f32 {
     type Alignment = Align4;
 }
 
+unsafe impl Std140 for f64 {
+    type Alignment = Align8;
+}
+
+unsafe impl Std140 for i32 {
+    type Alignment = Align4;
+}
+
+unsafe impl Std140 for u32 {
+    type Alignment = Align4;
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
