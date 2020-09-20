@@ -75,6 +75,12 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
         initializer.push(quote!(#field_name: self.#field_name.as_std140()));
     }
 
+    let type_layout_derive = if cfg!(feature = "test_type_layout") {
+        quote!(#[derive(::type_layout::TypeLayout)])
+    } else {
+        quote!()
+    };
+
     // Build the output, possibly using quasi-quotation
     let expanded = quote! {
         #[allow(non_snake_case)]
@@ -85,7 +91,7 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
         }
 
         #[derive(Debug, Clone, Copy)]
-        #[derive(::crevice::type_layout::TypeLayout)]
+        #type_layout_derive
         #[repr(C)]
         #visibility struct #std140_name #ty_generics #where_clause {
             #( #std140_fields )*

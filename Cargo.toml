@@ -19,10 +19,11 @@ members = ["crevice-derive"]
 [dependencies]
 crevice-derive = { version = "0.1.0", path = "crevice-derive" }
 
-type-layout = { version = "0.2.0", features = ["serde1"] }
 bytemuck = "1.4.1"
 mint = "0.5.5"
 
 [dev-dependencies]
-insta = "0.16.1"
 cgmath = { version = "0.17.0", features = ["mint"] }
+insta = "0.16.1"
+type-layout = { version = "0.2.0", features = ["serde1"] }
+crevice-derive = { version = "0.1.0", path = "crevice-derive", features = ["test_type_layout"] }
