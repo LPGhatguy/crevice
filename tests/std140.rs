@@ -64,3 +64,36 @@ fn using_vec3_padding() {
     };
     let _value_std140 = value.as_std140();
 }
+
+#[derive(AsStd140)]
+struct PointLight {
+    position: Vec3,
+    diffuse: Vec3,
+    specular: Vec3,
+    brightness: f32,
+}
+
+#[test]
+fn point_light() {
+    assert_yaml_snapshot!(<<PointLight as AsStd140>::Std140Type as TypeLayout>::type_layout());
+
+    let value = PointLight {
+        position: Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        },
+        diffuse: Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        },
+        specular: Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        },
+        brightness: 4.0,
+    };
+    let _value_std140 = value.as_std140();
+}

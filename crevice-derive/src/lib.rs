@@ -28,16 +28,32 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
     let mut std140_fields = Vec::new();
     let mut initializer = Vec::new();
 
+    let align_names: Vec<_> = fields
+        .named
+        .iter()
+        .map(|field| format_ident!("_{}_align", field.ident.as_ref().unwrap()))
+        .collect();
+
     for (index, field) in fields.named.iter().enumerate() {
         let field_name = field.ident.as_ref().unwrap();
         let field_ty = &field.ty;
 
-        let align_name = format_ident!("_{}_align", field_name);
+        let align_name = &align_names[index];
 
-        let offset_accumulation = fields.named.iter().take(index).map(|field| {
-            let ty = &field.ty;
-            quote!(offset += ::std::mem::size_of::<#ty>();)
-        });
+        let offset_accumulation =
+            fields
+                .named
+                .iter()
+                .enumerate()
+                .take(index)
+                .map(|(index, field)| {
+                    let ty = &field.ty;
+                    let align_name = &align_names[index];
+                    quote! {
+                        offset += #align_name();
+                        offset += ::std::mem::size_of::<#ty>();
+                    }
+                });
 
         alignment_calculators.push(quote! {
             pub const fn #align_name() -> usize {
