@@ -1,6 +1,7 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Added documentation for everything in the crate.
 * Removed `type_layout` being exposed except for internal tests.
 * Fixed alignment offset not taking into account previously added alignment.
 * Added `std140::Writer`, for writing dynamically laid out types to buffers.

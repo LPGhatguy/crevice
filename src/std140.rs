@@ -13,6 +13,12 @@ pub use crevice_derive::AsStd140;
 /// Trait implemented for all `std140` primitives. Generally should not be
 /// implemented outside this crate.
 pub unsafe trait Std140: Copy + Zeroable + Pod {
+    /// The required alignment of the type.
+    ///
+    /// This is distinct from the value returned by `std::mem::align_of` because
+    /// `AsStd140` structs do not use Rust's alignment. This enables them to
+    /// control and zero their padding bytes, making converting them to and from
+    /// slices safe.
     const ALIGNMENT: usize;
 }
 
@@ -61,8 +67,10 @@ write_to_gpu_buffer(bytemuck::bytes_of(&camera_std140));
 ```
 */
 pub trait AsStd140 {
+    /// The `std140` version of this value.
     type Std140Type: Std140;
 
+    /// Convert this value into the `std140` version of itself.
     fn as_std140(&self) -> Self::Std140Type;
 }
 
@@ -156,10 +164,14 @@ pub struct Writer<W> {
 }
 
 impl<W: Write> Writer<W> {
+    /// Create a new `Writer`, wrapping a buffer, file, or other type that
+    /// implements [`std::io::Write`].
     pub fn new(writer: W) -> Self {
         Self { writer, offset: 0 }
     }
 
+    /// Write a new value to the underlying buffer, writing zeroed padding where
+    /// necessary.
     pub fn write<T>(&mut self, value: &T) -> io::Result<()>
     where
         T: AsStd140,
@@ -180,6 +192,7 @@ impl<W: Write> Writer<W> {
         Ok(())
     }
 
+    /// Returns the amount of data written by this `Writer`.
     pub fn len(&self) -> usize {
         self.offset
     }
@@ -232,10 +245,12 @@ pub struct Sizer {
 }
 
 impl Sizer {
+    /// Create a new `Sizer`.
     pub fn new() -> Self {
         Self { offset: 0 }
     }
 
+    /// Add a type's necessary padding and size to the `Sizer`.
     pub fn add<T>(&mut self)
     where
         T: AsStd140,
@@ -248,6 +263,8 @@ impl Sizer {
         self.offset += size;
     }
 
+    /// Returns the number of bytes required to contain all the types added to
+    /// the `Sizer`.
     pub fn len(&self) -> usize {
         self.offset
     }
@@ -269,6 +286,8 @@ unsafe impl Std140 for u32 {
     const ALIGNMENT: usize = 4;
 }
 
+/// Corresponds to GLSL's `vec2`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     pub x: f32,
@@ -282,6 +301,8 @@ unsafe impl Std140 for Vec2 {
     const ALIGNMENT: usize = 8;
 }
 
+/// Corresponds to GLSL's `vec3`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
     pub x: f32,
@@ -296,6 +317,8 @@ unsafe impl Std140 for Vec3 {
     const ALIGNMENT: usize = 16;
 }
 
+/// Corresponds to GLSL's `vec4`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Vec4 {
     pub x: f32,
@@ -311,6 +334,8 @@ unsafe impl Std140 for Vec4 {
     const ALIGNMENT: usize = 16;
 }
 
+/// Corresponds to GLSL's `mat2`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Mat2 {
     pub x: Vec2,
@@ -325,6 +350,8 @@ unsafe impl Std140 for Mat2 {
     const ALIGNMENT: usize = 16;
 }
 
+/// Corresponds to GLSL's `mat3`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Mat3 {
     pub x: Vec3,
@@ -341,6 +368,8 @@ unsafe impl Std140 for Mat3 {
     const ALIGNMENT: usize = 16;
 }
 
+/// Corresponds to GLSL's `mat4`.
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
 pub struct Mat4 {
     pub x: Vec4,

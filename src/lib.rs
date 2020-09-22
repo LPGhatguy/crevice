@@ -128,6 +128,8 @@ Crevice supports Rust 1.46.0 and newer due to use of new `const fn` features.
 [TypeLayout]: https://docs.rs/type-layout/latest/type_layout/trait.TypeLayout.html
 */
 
+#![deny(missing_docs)]
+
 pub use bytemuck;
 
 pub mod std140;
