@@ -29,6 +29,13 @@ ultraviolet support mint.
 
 ## Example
 
+```glsl
+uniform CAMERA {
+    mat4 view;
+    mat4 projection;
+} camera;
+```
+
 ```
 use cgmath::prelude::*;
 use cgmath::{Matrix4, Deg, perspective};
@@ -81,6 +88,19 @@ laid-out values.
 In this example, we'll write a length-prefixed list of lights to a buffer.
 `std140::Writer` helps align correctly, even across multiple structs, which can
 be tricky and error-prone otherwise.
+
+```glsl
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float brightness;
+};
+
+buffer POINT_LIGHTS {
+    uint len;
+    PointLight[] lights;
+} point_lights;
+```
 
 ```
 use crevice::std140::{self, AsStd140};
@@ -158,6 +178,74 @@ impl<W: Write> Writer<W> {
         self.offset += size;
 
         Ok(())
+    }
+
+    pub fn len(&self) -> usize {
+        self.offset
+    }
+}
+
+/**
+Type that computes the buffer size needed by a series of `std140` types laid
+out.
+
+This type works well well when paired with `Writer`, precomputing a buffer's
+size to alleviate the need to dynamically re-allocate buffers.
+
+## Example
+
+```glsl
+struct Frob {
+    vec3 size;
+    float frobiness;
+}
+
+buffer FROBS {
+    uint len;
+    Frob[] frobs;
+} frobs;
+```
+
+```
+use crevice::std140::{self, AsStd140};
+
+#[derive(AsStd140)]
+struct Frob {
+    size: mint::Vector3<f32>,
+    frobiness: f32,
+}
+
+// Many APIs require that buffers contain at least enough space for all
+// fixed-size bindiongs to a buffer as well as one element of any arrays, if
+// there are any.
+let mut sizer = std140::Sizer::new();
+sizer.add::<u32>();
+sizer.add::<Frob>();
+
+# fn create_buffer_with_size(size: usize) {}
+let buffer = create_buffer_with_size(sizer.len());
+# assert_eq!(sizer.len(), 32);
+```
+*/
+pub struct Sizer {
+    offset: usize,
+}
+
+impl Sizer {
+    pub fn new() -> Self {
+        Self { offset: 0 }
+    }
+
+    pub fn add<T>(&mut self)
+    where
+        T: AsStd140,
+    {
+        let size = size_of::<<T as AsStd140>::Std140Type>();
+        let alignment = <T as AsStd140>::Std140Type::ALIGNMENT;
+
+        let padding = align_offset(self.offset, alignment);
+        self.offset += padding;
+        self.offset += size;
     }
 
     pub fn len(&self) -> usize {

@@ -16,8 +16,18 @@ vek.
 
 ## Examples
 
+### Single Value
+
 Uploading many types can be done by deriving `AsStd140` and using the bytemuck
 crate to turn the result into bytes.
+
+```glsl
+uniform MAIN {
+    mat3 orientation;
+    vec3 position;
+    float scale;
+} main;
+```
 
 ```rust
 use crevice::std140::AsStd140;
@@ -43,7 +53,22 @@ let value_std140 = value.as_std140();
 upload_data_to_gpu(bytemuck::bytes_of(&value_std140));
 ```
 
-More complicated data can be uploaded using the std140 `Writer` type:
+### Sequential Types
+
+More complicated data can be uploaded using the std140 `Writer` type.
+
+```glsl
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float brightness;
+};
+
+buffer POINT_LIGHTS {
+    uint len;
+    PointLight[] lights;
+} point_lights;
+```
 
 ```rust
 use crevice::std140::{self, AsStd140};
