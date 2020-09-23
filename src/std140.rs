@@ -263,17 +263,22 @@ impl Sizer {
         Self { offset: 0 }
     }
 
-    /// Add a type's necessary padding and size to the `Sizer`.
-    pub fn add<T>(&mut self)
+    /// Add a type's necessary padding and size to the `Sizer`. Returns the
+    /// offset into the buffer where that type would be written.
+    pub fn add<T>(&mut self) -> usize
     where
         T: AsStd140,
     {
         let size = size_of::<<T as AsStd140>::Std140Type>();
         let alignment = <T as AsStd140>::Std140Type::ALIGNMENT;
-
         let padding = align_offset(self.offset, alignment);
+
         self.offset += padding;
+        let write_here = self.offset;
+
         self.offset += size;
+
+        write_here
     }
 
     /// Returns the number of bytes required to contain all the types added to

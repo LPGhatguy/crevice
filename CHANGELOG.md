@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 * Added `AsStd140::std140_size` for easily pre-sizing buffers.
+* `Sizer::add` now returns the offset the added value would be written to.
 
 ## 0.3.0 (2020-09-22)
 * Added `Std140::as_bytes`, reducing the need to work with bytemuck directly.
