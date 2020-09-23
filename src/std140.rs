@@ -79,6 +79,12 @@ pub trait AsStd140 {
 
     /// Convert this value into the `std140` version of itself.
     fn as_std140(&self) -> Self::Std140Type;
+
+    /// Returns the size of the `std140` version of this type. Useful for
+    /// pre-sizing buffers.
+    fn std140_size(&self) -> usize {
+        size_of::<Self::Std140Type>()
+    }
 }
 
 impl<T> AsStd140 for T
