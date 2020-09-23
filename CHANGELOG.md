@@ -1,6 +1,8 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Added `Std140::as_bytes`, reducing the need to work with bytemuck directly.
+* Removed public re-export of bytemuck.
 
 ## 0.2.0 (2020-09-22)
 * Added documentation for everything in the crate.

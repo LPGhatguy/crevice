@@ -5,8 +5,10 @@
 [![crevice docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/crevice)
 
 Crevice creates GLSL-compatible versions of types through the power of derive
-macros. Generated structs implement [`bytemuck::Zeroable`][Zeroable] and
-[`bytemuck::Pod`][Pod] to ease packing data into buffers for uploading.
+macros. Generated structures provide an [`as_bytes`][Std140::as_bytes] method to allow safely packing data into buffers for uploading.
+
+Generated structs also implement [`bytemuck::Zeroable`] and
+[`bytemuck::Pod`] for use with other libraries.
 
 Crevice is similar to [`glsl-layout`][glsl-layout], but supports `mint` types
 and explicitly initializes padding to remove one source of undefined behavior.
@@ -19,8 +21,9 @@ vek.
 
 #### Single Value
 
-Uploading many types can be done by deriving `AsStd140` and using the bytemuck
-crate to turn the result into bytes.
+Uploading many types can be done by deriving `AsStd140` and using
+[`as_std140`][AsStd140::as_std140] and [`as_bytes`][Std140::as_bytes] to turn
+the result into bytes.
 
 ```glsl
 uniform MAIN {
@@ -31,7 +34,7 @@ uniform MAIN {
 ```
 
 ```rust
-use crevice::std140::AsStd140;
+use crevice::std140::{AsStd140, Std140};
 use cgmath::prelude::*;
 use cgmath::{Matrix3, Vector3};
 
@@ -50,7 +53,7 @@ let value = MainUniform {
 
 let value_std140 = value.as_std140();
 
-upload_data_to_gpu(bytemuck::bytes_of(&value_std140));
+upload_data_to_gpu(value_std140.as_bytes());
 ```
 
 #### Sequential Types

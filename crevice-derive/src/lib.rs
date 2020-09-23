@@ -97,8 +97,8 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
             #( #std140_fields )*
         }
 
-        unsafe impl #impl_generics ::crevice::bytemuck::Zeroable for #std140_name #ty_generics #where_clause {}
-        unsafe impl #impl_generics ::crevice::bytemuck::Pod for #std140_name #ty_generics #where_clause {}
+        unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #std140_name #ty_generics #where_clause {}
+        unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #std140_name #ty_generics #where_clause {}
 
         unsafe impl #impl_generics ::crevice::std140::Std140 for #std140_name #ty_generics #where_clause {
             const ALIGNMENT: usize = 16;
@@ -111,7 +111,7 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
                 Self::Std140Type {
                     #( #initializer, )*
 
-                    ..::crevice::bytemuck::Zeroable::zeroed()
+                    ..::crevice::internal::bytemuck::Zeroable::zeroed()
                 }
             }
         }

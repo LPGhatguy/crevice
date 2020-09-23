@@ -1,6 +1,8 @@
 //! This module is internal to crevice but used by its derive macro. No
 //! guarantees are made about its contents.
 
+pub use bytemuck;
+
 /// Align the given struct offset up to the given alignment.
 pub const fn align_offset(offset: usize, alignment: usize) -> usize {
     if offset % alignment == 0 {

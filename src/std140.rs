@@ -20,6 +20,16 @@ pub unsafe trait Std140: Copy + Zeroable + Pod {
     /// control and zero their padding bytes, making converting them to and from
     /// slices safe.
     const ALIGNMENT: usize;
+
+    /// Casts the type to a byte array. Implementors should not override this
+    /// method.
+    ///
+    /// # Safety
+    /// This is always safe due to the requirements of [`bytemuck::Pod`] being a
+    /// prerequisite for this trait.
+    fn as_bytes(&self) -> &[u8] {
+        bytes_of(self)
+    }
 }
 
 /**
@@ -45,7 +55,7 @@ uniform CAMERA {
 ```
 use cgmath::prelude::*;
 use cgmath::{Matrix4, Deg, perspective};
-use crevice::std140::AsStd140;
+use crevice::std140::{AsStd140, Std140};
 
 #[derive(AsStd140)]
 struct CameraUniform {
@@ -58,12 +68,9 @@ let camera = CameraUniform {
     projection: perspective(Deg(60.0), 16.0/9.0, 0.01, 100.0).into(),
 };
 
-// Crevice's Std140 types implement bytemuck's Zeroable and Pod traits, making
-// it easy to turn them into bytes for uploading.
-
 # fn write_to_gpu_buffer(bytes: &[u8]) {}
 let camera_std140 = camera.as_std140();
-write_to_gpu_buffer(bytemuck::bytes_of(&camera_std140));
+write_to_gpu_buffer(camera_std140.as_bytes());
 ```
 */
 pub trait AsStd140 {
