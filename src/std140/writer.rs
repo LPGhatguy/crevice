@@ -113,6 +113,18 @@ impl<W: Write> Writer<W> {
         Ok(())
     }
 
+    /// Write a slice of values to the underlying buffer.
+    pub fn write_slice<T>(&mut self, slice: &[T]) -> io::Result<()>
+    where
+        T: AsStd140,
+    {
+        for value in slice {
+            self.write(value)?;
+        }
+
+        Ok(())
+    }
+
     /// Returns the amount of data written by this `Writer`.
     pub fn len(&self) -> usize {
         self.offset
