@@ -1,6 +1,8 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## 0.4.0 (2020-10-01)
 * Added `AsStd140::std140_size` for easily pre-sizing buffers.
 * `Writer::write` and `Sizer::add` now return the offset the value is or would be written to.
 * Added `std140::DynamicUniform` for aligning dynamic uniform members.
