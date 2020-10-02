@@ -93,7 +93,9 @@ impl<W: Write> Writer<W> {
 
     /// Write a new value to the underlying buffer, writing zeroed padding where
     /// necessary.
-    pub fn write<T>(&mut self, value: &T) -> io::Result<()>
+    ///
+    /// Returns the offset into the buffer that the value was written to.
+    pub fn write<T>(&mut self, value: &T) -> io::Result<usize>
     where
         T: AsStd140,
     {
@@ -108,9 +110,11 @@ impl<W: Write> Writer<W> {
 
         let value = value.as_std140();
         self.writer.write_all(bytes_of(&value))?;
+
+        let write_here = self.offset;
         self.offset += size;
 
-        Ok(())
+        Ok(write_here)
     }
 
     /// Write a slice of values to the underlying buffer.

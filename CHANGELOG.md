@@ -2,7 +2,7 @@
 
 ## Unreleased Changes
 * Added `AsStd140::std140_size` for easily pre-sizing buffers.
-* `Sizer::add` now returns the offset the added value would be written to.
+* `Writer::write` and `Sizer::add` now return the offset the value is or would be written to.
 * Added `std140::DynamicUniform` for aligning dynamic uniform members.
 * Added `Writer::write_slice` for writing multiple values in a row.
 
