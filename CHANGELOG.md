@@ -1,6 +1,8 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## 0.5.0 (2020-10-18)
 * Added f64-based std140 types: `DVec2`, `DVec3`, `DVec4`, `DMat2`, `DMat3`, and `DMat4`.
 * Added support for std140 structs with alignment greater than 16.
 * Fixed padding for std140 matrices; they were previously missing trailing padding.
