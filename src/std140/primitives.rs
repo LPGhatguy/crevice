@@ -43,13 +43,13 @@ macro_rules! vectors {
 }
 
 vectors! {
-    #[doc = "Corresponds to GLSL's `vec2`."] align(8) Vec2<f32>(x, y)
-    #[doc = "Corresponds to GLSL's `vec3`."] align(16) Vec3<f32>(x, y, z)
-    #[doc = "Corresponds to GLSL's `vec4`."] align(16) Vec4<f32>(x, y, z, w)
+    #[doc = "Corresponds to a GLSL `vec2` in std140 layout."] align(8) Vec2<f32>(x, y)
+    #[doc = "Corresponds to a GLSL `vec3` in std140 layout."] align(16) Vec3<f32>(x, y, z)
+    #[doc = "Corresponds to a GLSL `vec4` in std140 layout."] align(16) Vec4<f32>(x, y, z, w)
 
-    #[doc = "Corresponds to GLSL's `dvec2`."] align(16) DVec2<f64>(x, y)
-    #[doc = "Corresponds to GLSL's `dvec3`."] align(32) DVec3<f64>(x, y, z)
-    #[doc = "Corresponds to GLSL's `dvec4`."] align(32) DVec4<f64>(x, y, z, w)
+    #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) DVec2<f64>(x, y)
+    #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) DVec3<f64>(x, y, z)
+    #[doc = "Corresponds to a GLSL `dvec4` in std140 layout."] align(32) DVec4<f64>(x, y, z, w)
 }
 
 macro_rules! matrices {
@@ -81,25 +81,27 @@ macro_rules! matrices {
 }
 
 matrices! {
-    #[doc = "Corresponds to GLSL's `mat2`."]
+    #[doc = "Corresponds to a GLSL `mat2` in std140 layout."]
     align(16)
     Mat2 {
         x: Vec2,
-        _pad_y: [f32; 2],
+        _pad_x: [f32; 2],
         y: Vec2,
+        _pad_y: [f32; 2],
     }
 
-    #[doc = "Corresponds to GLSL's `mat3`."]
+    #[doc = "Corresponds to a GLSL `mat3` in std140 layout."]
     align(16)
     Mat3 {
         x: Vec3,
-        _pad_y: f32,
+        _pad_x: f32,
         y: Vec3,
-        _pad_z: f32,
+        _pad_y: f32,
         z: Vec3,
+        _pad_z: f32,
     }
 
-    #[doc = "Corresponds to GLSL's `mat4`."]
+    #[doc = "Corresponds to a GLSL `mat4` in std140 layout."]
     align(16)
     Mat4 {
         x: Vec4,
@@ -108,14 +110,14 @@ matrices! {
         w: Vec4,
     }
 
-    #[doc = "Corresponds to GLSL's `dmat2`."]
+    #[doc = "Corresponds to a GLSL `dmat2` in std140 layout."]
     align(16)
     DMat2 {
         x: DVec2,
         y: DVec2,
     }
 
-    #[doc = "Corresponds to GLSL's `dmat2`."]
+    #[doc = "Corresponds to a GLSL `dmat3` in std140 layout."]
     align(32)
     DMat3 {
         x: DVec3,
@@ -123,9 +125,10 @@ matrices! {
         y: DVec3,
         _pad_y: f64,
         z: DVec3,
+        _pad_z: f64,
     }
 
-    #[doc = "Corresponds to GLSL's `dmat3`."]
+    #[doc = "Corresponds to a GLSL `dmat3` in std140 layout."]
     align(32)
     DMat4 {
         x: DVec4,
