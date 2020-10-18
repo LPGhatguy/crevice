@@ -75,6 +75,16 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
         initializer.push(quote!(#field_name: self.#field_name.as_std140()));
     }
 
+    let struct_alignment = fields.named.iter().fold(quote!(16usize), |last, field| {
+        let field_ty = &field.ty;
+        quote! {
+            ::crevice::internal::max(
+                <<#field_ty as ::crevice::std140::AsStd140>::Std140Type as ::crevice::std140::Std140>::ALIGNMENT,
+                #last,
+            )
+        }
+    });
+
     let type_layout_derive = if cfg!(feature = "test_type_layout") {
         quote!(#[derive(::type_layout::TypeLayout)])
     } else {
@@ -101,7 +111,7 @@ pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #std140_name #ty_generics #where_clause {}
 
         unsafe impl #impl_generics ::crevice::std140::Std140 for #std140_name #ty_generics #where_clause {
-            const ALIGNMENT: usize = 16;
+            const ALIGNMENT: usize = #struct_alignment;
         }
 
         impl #impl_generics ::crevice::std140::AsStd140 for #name #ty_generics #where_clause {

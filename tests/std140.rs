@@ -1,7 +1,7 @@
 use insta::assert_yaml_snapshot;
 use type_layout::TypeLayout;
 
-use crevice::std140::{AsStd140, Vec3};
+use crevice::std140::{AsStd140, DVec4, Std140, Vec3};
 
 #[derive(AsStd140)]
 struct PrimitiveF32 {
@@ -12,6 +12,8 @@ struct PrimitiveF32 {
 #[test]
 fn primitive_f32() {
     assert_yaml_snapshot!(<<PrimitiveF32 as AsStd140>::Std140Type as TypeLayout>::type_layout());
+
+    assert_eq!(<PrimitiveF32 as AsStd140>::Std140Type::ALIGNMENT, 16);
 
     let value = PrimitiveF32 { x: 1.0, y: 2.0 };
     let _value_std140 = value.as_std140();
@@ -26,6 +28,8 @@ struct TestVec3 {
 #[test]
 fn test_vec3() {
     assert_yaml_snapshot!(<<TestVec3 as AsStd140>::Std140Type as TypeLayout>::type_layout());
+
+    assert_eq!(<TestVec3 as AsStd140>::Std140Type::ALIGNMENT, 16);
 
     let value = TestVec3 {
         pos: Vec3 {
@@ -54,6 +58,8 @@ fn using_vec3_padding() {
         <<UsingVec3Padding as AsStd140>::Std140Type as TypeLayout>::type_layout()
     );
 
+    assert_eq!(<UsingVec3Padding as AsStd140>::Std140Type::ALIGNMENT, 16);
+
     let value = UsingVec3Padding {
         pos: Vec3 {
             x: 1.0,
@@ -77,6 +83,8 @@ struct PointLight {
 fn point_light() {
     assert_yaml_snapshot!(<<PointLight as AsStd140>::Std140Type as TypeLayout>::type_layout());
 
+    assert_eq!(<PointLight as AsStd140>::Std140Type::ALIGNMENT, 16);
+
     let value = PointLight {
         position: Vec3 {
             x: 1.0,
@@ -96,4 +104,18 @@ fn point_light() {
         brightness: 4.0,
     };
     let _value_std140 = value.as_std140();
+}
+
+#[derive(AsStd140)]
+struct MoreThan16Alignment {
+    doubles: DVec4,
+}
+
+#[test]
+fn more_than_16_alignment() {
+    assert_yaml_snapshot!(
+        <<MoreThan16Alignment as AsStd140>::Std140Type as TypeLayout>::type_layout()
+    );
+
+    assert_eq!(<MoreThan16Alignment as AsStd140>::Std140Type::ALIGNMENT, 32);
 }
