@@ -18,101 +18,122 @@ unsafe impl Std140 for u32 {
     const ALIGNMENT: usize = 4;
 }
 
-/// Corresponds to GLSL's `vec2`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Vec2 {
-    pub x: f32,
-    pub y: f32,
+macro_rules! vectors {
+    (
+        $(
+            #[$doc:meta] align($align:literal) $name:ident <$prim:ident> ($($field:ident),+)
+        )+
+    ) => {
+        $(
+            #[$doc]
+            #[allow(missing_docs)]
+            #[derive(Debug, Clone, Copy)]
+            pub struct $name {
+                $(pub $field: $prim,)+
+            }
+
+            unsafe impl Zeroable for $name {}
+            unsafe impl Pod for $name {}
+
+            unsafe impl Std140 for $name {
+                const ALIGNMENT: usize = $align;
+            }
+        )+
+    };
 }
 
-unsafe impl Zeroable for Vec2 {}
-unsafe impl Pod for Vec2 {}
+vectors! {
+    #[doc = "Corresponds to a GLSL `vec2` in std140 layout."] align(8) Vec2<f32>(x, y)
+    #[doc = "Corresponds to a GLSL `vec3` in std140 layout."] align(16) Vec3<f32>(x, y, z)
+    #[doc = "Corresponds to a GLSL `vec4` in std140 layout."] align(16) Vec4<f32>(x, y, z, w)
 
-unsafe impl Std140 for Vec2 {
-    const ALIGNMENT: usize = 8;
+    #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) DVec2<f64>(x, y)
+    #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) DVec3<f64>(x, y, z)
+    #[doc = "Corresponds to a GLSL `dvec4` in std140 layout."] align(32) DVec4<f64>(x, y, z, w)
 }
 
-/// Corresponds to GLSL's `vec3`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Vec3 {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+macro_rules! matrices {
+    (
+        $(
+            #[$doc:meta]
+            align($align:literal)
+            $name:ident {
+                $($field:ident: $field_ty:ty,)+
+            }
+        )+
+    ) => {
+        $(
+            #[$doc]
+            #[allow(missing_docs)]
+            #[derive(Debug, Clone, Copy)]
+            pub struct $name {
+                $(pub $field: $field_ty,)+
+            }
+
+            unsafe impl Zeroable for $name {}
+            unsafe impl Pod for $name {}
+
+            unsafe impl Std140 for $name {
+                const ALIGNMENT: usize = $align;
+            }
+        )+
+    };
 }
 
-unsafe impl Zeroable for Vec3 {}
-unsafe impl Pod for Vec3 {}
+matrices! {
+    #[doc = "Corresponds to a GLSL `mat2` in std140 layout."]
+    align(16)
+    Mat2 {
+        x: Vec2,
+        _pad_x: [f32; 2],
+        y: Vec2,
+        _pad_y: [f32; 2],
+    }
 
-unsafe impl Std140 for Vec3 {
-    const ALIGNMENT: usize = 16;
-}
+    #[doc = "Corresponds to a GLSL `mat3` in std140 layout."]
+    align(16)
+    Mat3 {
+        x: Vec3,
+        _pad_x: f32,
+        y: Vec3,
+        _pad_y: f32,
+        z: Vec3,
+        _pad_z: f32,
+    }
 
-/// Corresponds to GLSL's `vec4`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Vec4 {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub w: f32,
-}
+    #[doc = "Corresponds to a GLSL `mat4` in std140 layout."]
+    align(16)
+    Mat4 {
+        x: Vec4,
+        y: Vec4,
+        z: Vec4,
+        w: Vec4,
+    }
 
-unsafe impl Zeroable for Vec4 {}
-unsafe impl Pod for Vec4 {}
+    #[doc = "Corresponds to a GLSL `dmat2` in std140 layout."]
+    align(16)
+    DMat2 {
+        x: DVec2,
+        y: DVec2,
+    }
 
-unsafe impl Std140 for Vec4 {
-    const ALIGNMENT: usize = 16;
-}
+    #[doc = "Corresponds to a GLSL `dmat3` in std140 layout."]
+    align(32)
+    DMat3 {
+        x: DVec3,
+        _pad_x: f64,
+        y: DVec3,
+        _pad_y: f64,
+        z: DVec3,
+        _pad_z: f64,
+    }
 
-/// Corresponds to GLSL's `mat2`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Mat2 {
-    pub x: Vec2,
-    pub _pad_y: [f32; 2],
-    pub y: Vec2,
-}
-
-unsafe impl Zeroable for Mat2 {}
-unsafe impl Pod for Mat2 {}
-
-unsafe impl Std140 for Mat2 {
-    const ALIGNMENT: usize = 16;
-}
-
-/// Corresponds to GLSL's `mat3`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Mat3 {
-    pub x: Vec3,
-    pub _pad_y: f32,
-    pub y: Vec3,
-    pub _pad_z: f32,
-    pub z: Vec3,
-}
-
-unsafe impl Zeroable for Mat3 {}
-unsafe impl Pod for Mat3 {}
-
-unsafe impl Std140 for Mat3 {
-    const ALIGNMENT: usize = 16;
-}
-
-/// Corresponds to GLSL's `mat4`.
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub struct Mat4 {
-    pub x: Vec4,
-    pub y: Vec4,
-    pub z: Vec4,
-    pub w: Vec4,
-}
-
-unsafe impl Zeroable for Mat4 {}
-unsafe impl Pod for Mat4 {}
-
-unsafe impl Std140 for Mat4 {
-    const ALIGNMENT: usize = 16;
+    #[doc = "Corresponds to a GLSL `dmat3` in std140 layout."]
+    align(32)
+    DMat4 {
+        x: DVec4,
+        y: DVec4,
+        z: DVec4,
+        w: DVec4,
+    }
 }
