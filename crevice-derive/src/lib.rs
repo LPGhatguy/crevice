@@ -2,7 +2,7 @@ use proc_macro::TokenStream as CompilerTokenStream;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, FieldsNamed, Ident, Path};
+use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, Ident, Path};
 
 #[proc_macro_derive(AsStd140)]
 pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
@@ -71,8 +71,10 @@ impl EmitOptions {
     }
 
     fn emit(&self, input: DeriveInput) -> TokenStream {
+        let min_struct_alignment = self.min_struct_alignment;
         let layout_name = &self.layout_name;
         let mod_path = &self.mod_path;
+        let trait_path = &self.trait_path;
         let as_trait_path = &self.as_trait_path;
         let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
@@ -178,7 +180,27 @@ impl EmitOptions {
             })
             .collect();
 
-        let struct_alignment = self.emit_struct_alignment(fields);
+        // This fold builds up an expression that finds the maximum alignment out of
+        // all of the fields in the struct. For this struct:
+        //
+        // struct Foo { a: ty1, b: ty2 }
+        //
+        // ...we should generate an expression like this:
+        //
+        // max(ty2_align, max(ty1_align, min_align))
+        let struct_alignment = fields.named.iter().fold(
+            quote!(#min_struct_alignment),
+            |last, field| {
+                let field_ty = &field.ty;
+
+                quote! {
+                    ::crevice::internal::max(
+                        <<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::ALIGNMENT,
+                        #last,
+                    )
+                }
+            },
+        );
 
         // For testing purposes, we can optionally generate type layout
         // information using the type-layout crate.
@@ -222,39 +244,5 @@ impl EmitOptions {
                 }
             }
         }
-    }
-
-    /// Emit a const expression that computes the alignment of a struct based on its
-    /// minimum alignment and fields.
-    ///
-    /// The minimum alignment of an std140 struct is 16, while the minimum alignment
-    /// for an std430 struct is 0.
-    fn emit_struct_alignment(&self, fields: &FieldsNamed) -> TokenStream {
-        let min_alignment = self.min_struct_alignment;
-        let trait_path = &self.trait_path;
-        let as_trait_path = &self.as_trait_path;
-        let as_trait_assoc = &self.as_trait_assoc;
-
-        // This fold builds up an expression that finds the maximum alignment out of
-        // all of the fields in the struct. For this struct:
-        //
-        // struct Foo { a: ty1, b: ty2 }
-        //
-        // ...we should generate an expression like this:
-        //
-        // max(ty2_align, max(ty1_align, min_align))
-        fields
-            .named
-            .iter()
-            .fold(quote!(#min_alignment), |last, field| {
-                let field_ty = &field.ty;
-
-                quote! {
-                    ::crevice::internal::max(
-                        <<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::ALIGNMENT,
-                        #last,
-                    )
-                }
-            })
     }
 }
