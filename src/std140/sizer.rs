@@ -1,7 +1,3 @@
-// This module defines a deprecated type, but we don't want to warn on our own
-// usage of it in the module defining it.
-#![allow(deprecated)]
-
 use std::mem::size_of;
 
 use crate::internal::align_offset;
@@ -49,7 +45,6 @@ let buffer = create_buffer_with_size(sizer.len());
 # assert_eq!(sizer.len(), 32);
 ```
 */
-#[deprecated(since = "0.6.0", note = "Use Writer with std::io::sink() instead")]
 pub struct Sizer {
     offset: usize,
 }
