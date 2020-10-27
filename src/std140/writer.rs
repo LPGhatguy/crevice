@@ -4,7 +4,7 @@ use std::mem::size_of;
 use bytemuck::bytes_of;
 
 use crate::internal::align_offset;
-use crate::std140::{AsStd140, Std140};
+use crate::std140::{AsStd140, Std140, WriteStd140};
 
 /**
 Type that enables writing correctly aligned `std140` values to a buffer.
@@ -67,11 +67,7 @@ writer.write(&light_count)?;
 // PointLight structure correctly. In this case, there will be 12 bytes of
 // padding between the length field and the light list.
 
-for light in &lights {
-    writer.write(light)?;
-
-    // Crevice will also pad between each array element.
-}
+writer.write(lights.as_slice())?;
 
 # fn unmap_gpu_buffer() {}
 unmap_gpu_buffer();
@@ -97,11 +93,17 @@ impl<W: Write> Writer<W> {
     /// Returns the offset into the buffer that the value was written to.
     pub fn write<T>(&mut self, value: &T) -> io::Result<usize>
     where
-        T: AsStd140,
+        T: WriteStd140 + ?Sized,
     {
-        let size = size_of::<<T as AsStd140>::Std140Type>();
-        let alignment = <T as AsStd140>::Std140Type::ALIGNMENT;
-        let padding = align_offset(self.offset, alignment);
+        value.write_std140(self)
+    }
+
+    /// Write an `Std140` type to the underlying buffer.
+    pub fn write_std140<T>(&mut self, value: &T) -> io::Result<usize>
+    where
+        T: Std140,
+    {
+        let padding = align_offset(self.offset, T::ALIGNMENT);
 
         for _ in 0..padding {
             self.writer.write_all(&[0])?;
@@ -112,21 +114,21 @@ impl<W: Write> Writer<W> {
         self.writer.write_all(bytes_of(&value))?;
 
         let write_here = self.offset;
-        self.offset += size;
+        self.offset += size_of::<T>();
 
         Ok(write_here)
     }
 
     /// Write a slice of values to the underlying buffer.
-    pub fn write_slice<T>(&mut self, slice: &[T]) -> io::Result<()>
+    #[deprecated(
+        since = "0.6.0",
+        note = "Use `write` instead -- it now works on slices."
+    )]
+    pub fn write_slice<T>(&mut self, slice: &[T]) -> io::Result<usize>
     where
         T: AsStd140,
     {
-        for value in slice {
-            self.write(value)?;
-        }
-
-        Ok(())
+        self.write(slice)
     }
 
     /// Returns the amount of data written by this `Writer`.

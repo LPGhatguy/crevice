@@ -1,6 +1,11 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Deprecated `Sizer` in favor of using `std140::Writer` paired with [`std::io::sink`](https://doc.rust-lang.org/stable/std/io/fn.sink.html). These should be equivalent.
+* Deprecated `Writer::write_slice`, as `Writer::write` now accepts slices.
+* Added the `WriteStd140` trait. This trait is more general than `AsStd140` and is automatically implemented for all existing `AsStd140` implementers.
+* Added `Writer::write_std140` to write a type that implements `Std140`.
+* Changed bounds of some functions, like `Writer::write` to use `WriteStd140` instead of `AsStd140`. This should affect no existing consumers.
 
 ## 0.5.0 (2020-10-18)
 * Added f64-based std140 types: `DVec2`, `DVec3`, `DVec4`, `DMat2`, `DMat3`, and `DMat4`.
