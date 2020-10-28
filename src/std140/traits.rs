@@ -111,7 +111,11 @@ pub trait WriteStd140 {
     /// The space required to write this value using `std140` layout rules. This
     /// does not include alignment padding that may be needed before or after
     /// this type when written as part of a larger buffer.
-    fn size(&self) -> usize;
+    fn size(&self) -> usize {
+        let mut writer = Writer::new(io::sink());
+        self.write_std140(&mut writer).unwrap();
+        writer.len()
+    }
 }
 
 impl<T> WriteStd140 for T
