@@ -98,6 +98,28 @@ impl<W: Write> Writer<W> {
         value.write_std140(self)
     }
 
+    /// Write an iterator of values to the underlying buffer.
+    ///
+    /// Returns the offset into the buffer that the first value was written to.
+    /// If no values were written, returns the `len()`.
+    pub fn write_iter<I, T>(&mut self, iter: I) -> io::Result<usize>
+    where
+        I: IntoIterator<Item = T>,
+        T: WriteStd140,
+    {
+        let mut first_offset = None;
+
+        for item in iter {
+            let offset = item.write_std140(self)?;
+
+            if first_offset.is_none() {
+                first_offset = Some(offset);
+            }
+        }
+
+        Ok(first_offset.unwrap_or(self.offset))
+    }
+
     /// Write an `Std140` type to the underlying buffer.
     pub fn write_std140<T>(&mut self, value: &T) -> io::Result<usize>
     where
