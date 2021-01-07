@@ -1,6 +1,9 @@
+use std::io::{self, Write};
 use std::mem::size_of;
 
 use bytemuck::{bytes_of, Pod, Zeroable};
+
+use crate::std430::Writer;
 
 /// Trait implemented for all `std430` primitives. Generally should not be
 /// implemented outside this crate.
@@ -74,7 +77,7 @@ pub trait AsStd430 {
 
     /// Returns the size of the `std430` version of this type. Useful for
     /// pre-sizing buffers.
-    fn std430_size(&self) -> usize {
+    fn std430_size_static() -> usize {
         size_of::<Self::Std430Type>()
     }
 }
@@ -87,5 +90,68 @@ where
 
     fn as_std430(&self) -> Self {
         *self
+    }
+}
+
+/// Trait implemented for all types that can be written into a buffer as
+/// `std430` bytes. This type is more general than [`AsStd430`]: all `AsStd430`
+/// types implement `WriteStd430`, but not the other way around.
+///
+/// While `AsStd430` requires implementers to return a type that implements the
+/// `Std430` trait, `WriteStd430` directly writes bytes using a [`Writer`]. This
+/// makes `WriteStd430` usable for writing slices or other DSTs that could not
+/// implement `AsStd430` without allocating new memory on the heap.
+pub trait WriteStd430 {
+    /// Writes this value into the given [`Writer`] using `std430` layout rules.
+    ///
+    /// Should return the offset of the first byte of this type, as returned by
+    /// the first call to [`Writer::write`].
+    fn write_std430<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize>;
+
+    /// The space required to write this value using `std430` layout rules. This
+    /// does not include alignment padding that may be needed before or after
+    /// this type when written as part of a larger buffer.
+    fn std430_size(&self) -> usize {
+        let mut writer = Writer::new(io::sink());
+        self.write_std430(&mut writer).unwrap();
+        writer.len()
+    }
+}
+
+impl<T> WriteStd430 for T
+where
+    T: AsStd430,
+{
+    fn write_std430<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
+        writer.write_std430(&self.as_std430())
+    }
+
+    fn std430_size(&self) -> usize {
+        size_of::<<Self as AsStd430>::Std430Type>()
+    }
+}
+
+impl<T> WriteStd430 for [T]
+where
+    T: WriteStd430,
+{
+    fn write_std430<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
+        let mut offset = None;
+
+        for item in self.iter() {
+            let item_offset = item.write_std430(writer)?;
+
+            if offset.is_none() {
+                offset = Some(item_offset);
+            }
+        }
+
+        Ok(offset.unwrap_or(writer.len()))
+    }
+
+    fn std430_size(&self) -> usize {
+        let mut writer = Writer::new(io::sink());
+        self.write_std430(&mut writer).unwrap();
+        writer.len()
     }
 }
