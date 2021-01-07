@@ -4,33 +4,33 @@ use crate::std140::{self, AsStd140};
 use crate::std430::{self, AsStd430};
 
 macro_rules! mint_vectors {
-	( $( $mint_ty:ty, $std_name:ident, ( $($field:ident),* ), )* ) => {
-		$(
-			impl AsStd140 for $mint_ty {
-				type Std140Type = std140::$std_name;
+    ( $( $mint_ty:ty, $std_name:ident, ( $($field:ident),* ), )* ) => {
+        $(
+            impl AsStd140 for $mint_ty {
+                type Std140Type = std140::$std_name;
 
-				fn as_std140(&self) -> Self::Std140Type {
-					std140::$std_name {
-						$(
-							$field: self.$field,
-						)*
-					}
-				}
-			}
+                fn as_std140(&self) -> Self::Std140Type {
+                    std140::$std_name {
+                        $(
+                            $field: self.$field,
+                        )*
+                    }
+                }
+            }
 
-			impl AsStd430 for $mint_ty {
-				type Std430Type = std430::$std_name;
+            impl AsStd430 for $mint_ty {
+                type Std430Type = std430::$std_name;
 
-				fn as_std430(&self) -> Self::Std430Type {
-					std430::$std_name {
-						$(
-							$field: self.$field,
-						)*
-					}
-				}
-			}
-		)*
-	};
+                fn as_std430(&self) -> Self::Std430Type {
+                    std430::$std_name {
+                        $(
+                            $field: self.$field,
+                        )*
+                    }
+                }
+            }
+        )*
+    };
 }
 
 mint_vectors! {
@@ -40,35 +40,35 @@ mint_vectors! {
 }
 
 macro_rules! mint_matrices {
-	( $( $mint_ty:ty, $std_name:ident, ( $($field:ident),* ), )* ) => {
-		$(
-			impl AsStd140 for $mint_ty {
-				type Std140Type = std140::$std_name;
+    ( $( $mint_ty:ty, $std_name:ident, ( $($field:ident),* ), )* ) => {
+        $(
+            impl AsStd140 for $mint_ty {
+                type Std140Type = std140::$std_name;
 
-				fn as_std140(&self) -> Self::Std140Type {
-					std140::$std_name {
-						$(
-							$field: self.$field.as_std140(),
-						)*
-						..Zeroable::zeroed()
-					}
-				}
-			}
+                fn as_std140(&self) -> Self::Std140Type {
+                    std140::$std_name {
+                        $(
+                            $field: self.$field.as_std140(),
+                        )*
+                        ..Zeroable::zeroed()
+                    }
+                }
+            }
 
-			impl AsStd430 for $mint_ty {
-				type Std430Type = std430::$std_name;
+            impl AsStd430 for $mint_ty {
+                type Std430Type = std430::$std_name;
 
-				fn as_std430(&self) -> Self::Std430Type {
-					std430::$std_name {
-						$(
-							$field: self.$field.as_std430(),
-						)*
-						..Zeroable::zeroed()
-					}
-				}
-			}
-		)*
-	};
+                fn as_std430(&self) -> Self::Std430Type {
+                    std430::$std_name {
+                        $(
+                            $field: self.$field.as_std430(),
+                        )*
+                        ..Zeroable::zeroed()
+                    }
+                }
+            }
+        )*
+    };
 }
 
 mint_matrices! {
