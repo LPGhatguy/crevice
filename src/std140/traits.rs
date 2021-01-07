@@ -77,7 +77,7 @@ pub trait AsStd140 {
 
     /// Returns the size of the `std140` version of this type. Useful for
     /// pre-sizing buffers.
-    fn std140_size(&self) -> usize {
+    fn std140_size_static() -> usize {
         size_of::<Self::Std140Type>()
     }
 }
@@ -111,7 +111,7 @@ pub trait WriteStd140 {
     /// The space required to write this value using `std140` layout rules. This
     /// does not include alignment padding that may be needed before or after
     /// this type when written as part of a larger buffer.
-    fn size(&self) -> usize {
+    fn std140_size(&self) -> usize {
         let mut writer = Writer::new(io::sink());
         self.write_std140(&mut writer).unwrap();
         writer.len()
@@ -126,8 +126,8 @@ where
         writer.write_std140(&self.as_std140())
     }
 
-    fn size(&self) -> usize {
-        self.std140_size()
+    fn std140_size(&self) -> usize {
+        size_of::<<Self as AsStd140>::Std140Type>()
     }
 }
 
@@ -149,7 +149,7 @@ where
         Ok(offset.unwrap_or(writer.len()))
     }
 
-    fn size(&self) -> usize {
+    fn std140_size(&self) -> usize {
         let mut writer = Writer::new(io::sink());
         self.write_std140(&mut writer).unwrap();
         writer.len()
