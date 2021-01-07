@@ -33,7 +33,7 @@ unsafe impl<T: Pod> Pod for DynamicUniformStd140<T> {}
 mod test {
     use super::*;
 
-    use crate::std140;
+    use crate::std140::{self, WriteStd140};
 
     #[test]
     fn size_is_unchanged() {
