@@ -1,6 +1,9 @@
+use std::io::{self, Write};
 use std::mem::size_of;
 
 use bytemuck::{bytes_of, Pod, Zeroable};
+
+use crate::std140::Writer;
 
 /// Trait implemented for all `std140` primitives. Generally should not be
 /// implemented outside this crate.
@@ -74,7 +77,7 @@ pub trait AsStd140 {
 
     /// Returns the size of the `std140` version of this type. Useful for
     /// pre-sizing buffers.
-    fn std140_size(&self) -> usize {
+    fn std140_size_static() -> usize {
         size_of::<Self::Std140Type>()
     }
 }
@@ -87,5 +90,68 @@ where
 
     fn as_std140(&self) -> Self {
         *self
+    }
+}
+
+/// Trait implemented for all types that can be written into a buffer as
+/// `std140` bytes. This type is more general than [`AsStd140`]: all `AsStd140`
+/// types implement `WriteStd140`, but not the other way around.
+///
+/// While `AsStd140` requires implementers to return a type that implements the
+/// `Std140` trait, `WriteStd140` directly writes bytes using a [`Writer`]. This
+/// makes `WriteStd140` usable for writing slices or other DSTs that could not
+/// implement `AsStd140` without allocating new memory on the heap.
+pub trait WriteStd140 {
+    /// Writes this value into the given [`Writer`] using `std140` layout rules.
+    ///
+    /// Should return the offset of the first byte of this type, as returned by
+    /// the first call to [`Writer::write`].
+    fn write_std140<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize>;
+
+    /// The space required to write this value using `std140` layout rules. This
+    /// does not include alignment padding that may be needed before or after
+    /// this type when written as part of a larger buffer.
+    fn std140_size(&self) -> usize {
+        let mut writer = Writer::new(io::sink());
+        self.write_std140(&mut writer).unwrap();
+        writer.len()
+    }
+}
+
+impl<T> WriteStd140 for T
+where
+    T: AsStd140,
+{
+    fn write_std140<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
+        writer.write_std140(&self.as_std140())
+    }
+
+    fn std140_size(&self) -> usize {
+        size_of::<<Self as AsStd140>::Std140Type>()
+    }
+}
+
+impl<T> WriteStd140 for [T]
+where
+    T: WriteStd140,
+{
+    fn write_std140<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
+        let mut offset = None;
+
+        for item in self.iter() {
+            let item_offset = item.write_std140(writer)?;
+
+            if offset.is_none() {
+                offset = Some(item_offset);
+            }
+        }
+
+        Ok(offset.unwrap_or(writer.len()))
+    }
+
+    fn std140_size(&self) -> usize {
+        let mut writer = Writer::new(io::sink());
+        self.write_std140(&mut writer).unwrap();
+        writer.len()
     }
 }

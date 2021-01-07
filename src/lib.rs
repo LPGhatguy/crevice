@@ -4,7 +4,8 @@
 [![crevice docs](https://img.shields.io/badge/docs-docs.rs-orange.svg)](https://docs.rs/crevice)
 
 Crevice creates GLSL-compatible versions of types through the power of derive
-macros. Generated structures provide an [`as_bytes`][Std140::as_bytes] method to allow safely packing data into buffers for uploading.
+macros. Generated structures provide an [`as_bytes`][Std140::as_bytes] method to
+allow safely packing data into buffers for uploading.
 
 Generated structs also implement [`bytemuck::Zeroable`] and
 [`bytemuck::Pod`] for use with other libraries.
@@ -109,11 +110,7 @@ writer.write(&light_count)?;
 // PointLight structure correctly. In this case, there will be 12 bytes of
 // padding between the length field and the light list.
 
-for light in &lights {
-    writer.write(light)?;
-
-    // Crevice will also pad between each array element.
-}
+writer.write(lights.as_slice())?;
 
 # fn unmap_gpu_buffer() {}
 unmap_gpu_buffer();
