@@ -1,10 +1,11 @@
 # Crevice Changelog
 
 ## Unreleased Changes
-* Deprecated `Writer::write_slice`, as `Writer::write` now accepts slices.
+* Added `std430` support. Most APIs between `std140` and `std430` are the same!
 * Added the `WriteStd140` trait. This trait is more general than `AsStd140` and is automatically implemented for all existing `AsStd140` implementers.
 * Added `Writer::write_std140` to write a type that implements `Std140`.
 * Added `AsStd140::std140_size_static`. This is similar to the old size method, `std140_size`, but no longer requires a value to be passed. For size measurements that depend on a value, use `WriteStd140::std140_size` instead.
+* Deprecated `Writer::write_slice`, as `Writer::write` now accepts slices.
 * Changed bounds of some functions, like `Writer::write` to use `WriteStd140` instead of `AsStd140`. This should affect no existing consumers.
 * Moved `std140_size` from `AsStd140` to `WriteStd140`. Some existing consumers may need to import the other trait to access this m ethod.
 
