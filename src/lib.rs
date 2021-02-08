@@ -131,6 +131,7 @@ Crevice supports Rust 1.46.0 and newer due to use of new `const fn` features.
 #![deny(missing_docs)]
 
 pub mod std140;
+pub mod std430;
 
 #[doc(hidden)]
 pub mod internal;
