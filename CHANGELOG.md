@@ -1,6 +1,8 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## [0.6.0][0.6.0] (2021-02-24)
 * Added `std430` support. Most APIs between `std140` and `std430` are the same!
 * Added the `WriteStd140` trait. This trait is more general than `AsStd140` and is automatically implemented for all existing `AsStd140` implementers.
 * Added `Writer::write_std140` to write a type that implements `Std140`.
@@ -8,6 +10,8 @@
 * Deprecated `Writer::write_slice`, as `Writer::write` now accepts slices.
 * Changed bounds of some functions, like `Writer::write` to use `WriteStd140` instead of `AsStd140`. This should affect no existing consumers.
 * Moved `std140_size` from `AsStd140` to `WriteStd140`. Some existing consumers may need to import the other trait to access this m ethod.
+
+[0.6.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.6.0
 
 ## 0.5.0 (2020-10-18)
 * Added f64-based std140 types: `DVec2`, `DVec3`, `DVec4`, `DMat2`, `DMat3`, and `DMat4`.
