@@ -136,17 +136,19 @@ where
     T: WriteStd430,
 {
     fn write_std430<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
-        let mut offset = None;
+        let mut offset = writer.len();
 
-        for item in self.iter() {
-            let item_offset = item.write_std430(writer)?;
+        let mut iter = self.iter();
 
-            if offset.is_none() {
-                offset = Some(item_offset);
-            }
+        if let Some(item) = iter.next() {
+            offset = item.write_std430(writer)?;
         }
 
-        Ok(offset.unwrap_or(writer.len()))
+        for item in self.iter() {
+            item.write_std430(writer)?;
+        }
+
+        Ok(offset)
     }
 
     fn std430_size(&self) -> usize {
