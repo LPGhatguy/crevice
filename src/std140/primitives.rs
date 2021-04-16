@@ -47,6 +47,18 @@ vectors! {
     #[doc = "Corresponds to a GLSL `vec3` in std140 layout."] align(16) Vec3<f32>(x, y, z)
     #[doc = "Corresponds to a GLSL `vec4` in std140 layout."] align(16) Vec4<f32>(x, y, z, w)
 
+    #[doc = "Corresponds to a GLSL `ivec2` in std140 layout."] align(8) IVec2<i32>(x, y)
+    #[doc = "Corresponds to a GLSL `ivec3` in std140 layout."] align(16) IVec3<i32>(x, y, z)
+    #[doc = "Corresponds to a GLSL `ivec4` in std140 layout."] align(16) IVec4<i32>(x, y, z, w)
+
+    #[doc = "Corresponds to a GLSL `uvec2` in std140 layout."] align(8) UVec2<u32>(x, y)
+    #[doc = "Corresponds to a GLSL `uvec3` in std140 layout."] align(16) UVec3<u32>(x, y, z)
+    #[doc = "Corresponds to a GLSL `uvec4` in std140 layout."] align(16) UVec4<u32>(x, y, z, w)
+
+    #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) BVec2<bool>(x, y)
+    #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) BVec3<bool>(x, y, z)
+    #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) BVec4<bool>(x, y, z, w)
+
     #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) DVec2<f64>(x, y)
     #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) DVec3<f64>(x, y, z)
     #[doc = "Corresponds to a GLSL `dvec4` in std140 layout."] align(32) DVec4<f64>(x, y, z, w)
