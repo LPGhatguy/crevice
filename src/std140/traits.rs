@@ -136,17 +136,20 @@ where
     T: WriteStd140,
 {
     fn write_std140<W: Write>(&self, writer: &mut Writer<W>) -> io::Result<usize> {
-        let mut offset = None;
+        // if no items are written, offset is current position of the writer
+        let mut offset = writer.len();
 
-        for item in self.iter() {
-            let item_offset = item.write_std140(writer)?;
+        let mut iter = self.iter();
 
-            if offset.is_none() {
-                offset = Some(item_offset);
-            }
+        if let Some(item) = iter.next() {
+            offset = item.write_std140(writer)?;
         }
 
-        Ok(offset.unwrap_or(writer.len()))
+        for item in iter {
+            item.write_std140(writer)?;
+        }
+
+        Ok(offset)
     }
 
     fn std140_size(&self) -> usize {

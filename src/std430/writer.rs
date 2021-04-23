@@ -107,17 +107,19 @@ impl<W: Write> Writer<W> {
         I: IntoIterator<Item = T>,
         T: WriteStd430,
     {
-        let mut first_offset = None;
+        let mut offset = self.offset;
 
-        for item in iter {
-            let offset = item.write_std430(self)?;
+        let mut iter = iter.into_iter();
 
-            if first_offset.is_none() {
-                first_offset = Some(offset);
-            }
+        if let Some(item) = iter.next() {
+            offset = item.write_std430(self)?;
         }
 
-        Ok(first_offset.unwrap_or(self.offset))
+        for item in iter {
+            item.write_std430(self)?;
+        }
+
+        Ok(offset)
     }
 
     /// Write an `Std430` type to the underlying buffer.
