@@ -21,3 +21,12 @@ pub const fn max(a: usize, b: usize) -> usize {
         b
     }
 }
+
+pub const fn pad_at_end(size: usize, alignment: usize, do_pad: bool) -> usize {
+    if do_pad {
+        align_offset(size, alignment)
+    }
+    else {
+        0
+    }
+}

@@ -126,9 +126,25 @@ impl EmitOptions {
                             let field_ty = &field.ty;
                             quote! {
                                 offset += #align_name();
-                                offset += ::std::mem::size_of::<#field_ty>();
+                                offset += ::std::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
                             }
                         });
+
+                let pad_at_end = fields
+                    .named
+                    .iter()
+                    .take(index)
+                    .next_back()
+                    .map_or(quote!{0usize}, |field|{
+                        let field_ty = &field.ty;
+                        quote! {
+                            ::crevice::internal::pad_at_end(
+                                ::std::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>(),
+                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
+                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END
+                            )
+                        }
+                    });
 
                 let field_ty = &field.ty;
 
@@ -137,7 +153,7 @@ impl EmitOptions {
                         let mut offset = 0;
                         #( #offset_accumulation )*
 
-                        ::crevice::internal::align_offset(
+                        #pad_at_end + ::crevice::internal::align_offset(
                             offset,
                             <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
                         )
@@ -230,6 +246,7 @@ impl EmitOptions {
 
             unsafe impl #impl_generics #mod_path::#layout_name for #generated_name #ty_generics #where_clause {
                 const ALIGNMENT: usize = #struct_alignment;
+                const PAD_AT_END: bool = true;
             }
 
             impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
