@@ -2,7 +2,7 @@ use insta::assert_yaml_snapshot;
 use type_layout::TypeLayout;
 
 use crevice::std140::{AsStd140, DVec4, Std140, Vec3};
-use crevice::std430::{AsStd430};
+use crevice::std430::AsStd430;
 
 #[derive(AsStd140)]
 struct PrimitiveF32 {
@@ -124,14 +124,12 @@ fn more_than_16_alignment() {
 #[derive(AsStd140)]
 struct PaddingAtEnd {
     base_value: PrimitiveF32,
-    small_field: f32
+    small_field: f32,
 }
 
 #[test]
 fn padding_at_end() {
-    assert_yaml_snapshot!(
-        <<PaddingAtEnd as AsStd140>::Std140Type as TypeLayout>::type_layout()
-    );
+    assert_yaml_snapshot!(<<PaddingAtEnd as AsStd140>::Std140Type as TypeLayout>::type_layout());
 }
 
 #[derive(AsStd140, AsStd430)]
@@ -142,23 +140,19 @@ struct MatrixUniform {
 
 #[test]
 fn matrix_uniform_std140() {
-    assert_yaml_snapshot!(
-        <<MatrixUniform as AsStd140>::Std140Type as TypeLayout>::type_layout()
-    )
+    assert_yaml_snapshot!(<<MatrixUniform as AsStd140>::Std140Type as TypeLayout>::type_layout())
 }
 
 #[test]
 fn matrix_uniform_std430() {
-    assert_yaml_snapshot!(
-        <<MatrixUniform as AsStd430>::Std430Type as TypeLayout>::type_layout()
-    )
+    assert_yaml_snapshot!(<<MatrixUniform as AsStd430>::Std430Type as TypeLayout>::type_layout())
 }
 
 /// Rust size: 4, align: 4
 /// Std140 size: 4, align: 16
 #[derive(AsStd140)]
 struct PaddedByStdButNotRust {
-    x: f32
+    x: f32,
 }
 
 /// Rust size: 8, align: 4
@@ -166,7 +160,7 @@ struct PaddedByStdButNotRust {
 #[derive(AsStd140)]
 struct BaseSizeAndStdSizeAreDifferent {
     first: PaddedByStdButNotRust,
-    second: PaddedByStdButNotRust
+    second: PaddedByStdButNotRust,
 }
 
 /// If checking for base struct size, produces layout:
@@ -175,12 +169,13 @@ struct BaseSizeAndStdSizeAreDifferent {
 #[derive(AsStd140)]
 struct ProperlyChecksForUnderlyingTypeSize {
     leading: BaseSizeAndStdSizeAreDifferent,
-    trailing: PaddedByStdButNotRust
+    trailing: PaddedByStdButNotRust,
 }
 
 #[test]
 fn proper_offset_calculations_for_differing_member_sizes() {
     assert_yaml_snapshot!(
-        <<ProperlyChecksForUnderlyingTypeSize as AsStd140>::Std140Type as TypeLayout>::type_layout()
+        <<ProperlyChecksForUnderlyingTypeSize as AsStd140>::Std140Type as TypeLayout>::type_layout(
+        )
     )
 }
