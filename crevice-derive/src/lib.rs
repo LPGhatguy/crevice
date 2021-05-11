@@ -138,11 +138,12 @@ impl EmitOptions {
                     .map_or(quote!{0usize}, |field|{
                         let field_ty = &field.ty;
                         quote! {
-                            ::crevice::internal::pad_at_end(
-                                ::std::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>(),
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END
-                            )
+                            if <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END {
+                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
+                            }
+                            else {
+                                0usize
+                            }
                         }
                     });
 
@@ -153,9 +154,12 @@ impl EmitOptions {
                         let mut offset = 0;
                         #( #offset_accumulation )*
 
-                        #pad_at_end + ::crevice::internal::align_offset(
+                        ::crevice::internal::align_offset(
                             offset,
-                            <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
+                            ::crevice::internal::max(
+                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
+                                #pad_at_end
+                            )
                         )
                     }
                 }

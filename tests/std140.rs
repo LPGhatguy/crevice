@@ -73,33 +73,6 @@ fn using_vec3_padding() {
 }
 
 #[derive(AsStd140)]
-struct UsingVec3PaddingWithMint {
-    pos: mint::Vector3<f32>,
-    brightness: f32
-}
-
-#[test]
-fn mint_type_produces_same_padding() {
-    let layout_vec: TypeLayoutInfo = <<UsingVec3Padding as AsStd140>::Std140Type as TypeLayout>::type_layout();
-    let layout_mint: TypeLayoutInfo = <<UsingVec3PaddingWithMint as AsStd140>::Std140Type as TypeLayout>::type_layout();
-    assert_eq!(layout_vec.size, layout_mint.size);
-    assert_eq!(layout_vec.alignment, layout_mint.alignment);
-    layout_vec.fields.iter().zip(layout_mint.fields.iter()).for_each(
-        |(field_vec, field_mint)| {
-            use type_layout::Field::*;
-            match (field_vec, field_mint) {
-                (Field{size : S1, ..}, Field {size: S2, ..}) =>
-                    assert_eq!(S1, S2),
-                (Padding {size: S1}, Padding{size:S2}) =>
-                    assert_eq!(S1, S2),
-                _ =>
-                    panic!("Different fields: {:?} and {:?}", field_vec, field_mint)
-            }
-        }
-    )
-}
-
-#[derive(AsStd140)]
 struct PointLight {
     position: Vec3,
     diffuse: Vec3,
