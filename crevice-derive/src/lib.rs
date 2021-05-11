@@ -130,12 +130,10 @@ impl EmitOptions {
                             }
                         });
 
-                let pad_at_end = fields
-                    .named
-                    .iter()
-                    .take(index)
-                    .next_back()
-                    .map_or(quote!{0usize}, |field|{
+                let pad_at_end = index
+                    .checked_sub(1)
+                    .map_or(quote!{0usize}, |prev_index|{
+                        let field = &fields.named[prev_index];
                         let field_ty = &field.ty;
                         quote! {
                             if <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END {
