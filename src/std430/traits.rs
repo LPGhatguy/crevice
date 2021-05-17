@@ -80,6 +80,9 @@ pub trait AsStd430 {
     fn std430_size_static() -> usize {
         size_of::<Self::Std430Type>()
     }
+
+    /// Converts from `std430` version of self to self.
+    fn from_std430(value: Self::Std430Type) -> Self;
 }
 
 impl<T> AsStd430 for T
@@ -91,6 +94,8 @@ where
     fn as_std430(&self) -> Self {
         *self
     }
+
+    fn from_std430(value: Self) -> Self {value}
 }
 
 /// Trait implemented for all types that can be written into a buffer as
