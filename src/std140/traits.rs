@@ -1,8 +1,10 @@
+use core::mem::size_of;
+#[cfg(feature = "std")]
 use std::io::{self, Write};
-use std::mem::size_of;
 
 use bytemuck::{bytes_of, Pod, Zeroable};
 
+#[cfg(feature = "std")]
 use crate::std140::Writer;
 
 /// Trait implemented for all `std140` primitives. Generally should not be
@@ -101,6 +103,7 @@ where
 /// `Std140` trait, `WriteStd140` directly writes bytes using a [`Writer`]. This
 /// makes `WriteStd140` usable for writing slices or other DSTs that could not
 /// implement `AsStd140` without allocating new memory on the heap.
+#[cfg(feature = "std")]
 pub trait WriteStd140 {
     /// Writes this value into the given [`Writer`] using `std140` layout rules.
     ///
@@ -118,6 +121,7 @@ pub trait WriteStd140 {
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd140 for T
 where
     T: AsStd140,
@@ -131,6 +135,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd140 for [T]
 where
     T: WriteStd140,
