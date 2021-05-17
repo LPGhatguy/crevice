@@ -1,0 +1,26 @@
+---
+source: tests/std140.rs
+expression: "<<MatrixUniform as AsStd430>::Std430Type as TypeLayout>::type_layout()"
+
+---
+name: Std430MatrixUniform
+size: 52
+alignment: 4
+fields:
+  - Field:
+      name: _e_align
+      ty: "[u8 ; Std430MatrixUniformAlignment :: _e_align()]"
+      size: 0
+  - Field:
+      name: e
+      ty: "< mint :: ColumnMatrix3 < f32 > as :: crevice :: std430 :: AsStd430 > ::\nStd430Type"
+      size: 36
+  - Field:
+      name: _f_align
+      ty: "[u8 ; Std430MatrixUniformAlignment :: _f_align()]"
+      size: 12
+  - Field:
+      name: f
+      ty: "< f32 as :: crevice :: std430 :: AsStd430 > :: Std430Type"
+      size: 4
+
