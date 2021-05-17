@@ -45,7 +45,7 @@ struct EmitOptions {
     as_trait_method: Ident,
 
     // The name of the method used to convert from Trait to AsTrait.
-    from_trait_method: Ident
+    from_trait_method: Ident,
 }
 
 impl EmitOptions {

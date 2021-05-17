@@ -95,7 +95,9 @@ where
         *self
     }
 
-    fn from_std140(x: Self) -> Self {x}
+    fn from_std140(x: Self) -> Self {
+        x
+    }
 }
 
 /// Trait implemented for all types that can be written into a buffer as
