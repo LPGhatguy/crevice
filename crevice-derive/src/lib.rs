@@ -132,7 +132,7 @@ impl EmitOptions {
                             let field_ty = &field.ty;
                             quote! {
                                 offset += #align_name();
-                                offset += ::std::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
+                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
                             }
                         });
 

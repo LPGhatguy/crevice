@@ -1,8 +1,10 @@
+use core::mem::size_of;
+#[cfg(feature = "std")]
 use std::io::{self, Write};
-use std::mem::size_of;
 
 use bytemuck::{bytes_of, Pod, Zeroable};
 
+#[cfg(feature = "std")]
 use crate::std430::Writer;
 
 /// Trait implemented for all `std430` primitives. Generally should not be
@@ -113,6 +115,7 @@ where
 /// `Std430` trait, `WriteStd430` directly writes bytes using a [`Writer`]. This
 /// makes `WriteStd430` usable for writing slices or other DSTs that could not
 /// implement `AsStd430` without allocating new memory on the heap.
+#[cfg(feature = "std")]
 pub trait WriteStd430 {
     /// Writes this value into the given [`Writer`] using `std430` layout rules.
     ///
@@ -130,6 +133,7 @@ pub trait WriteStd430 {
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd430 for T
 where
     T: AsStd430,
@@ -143,6 +147,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd430 for [T]
 where
     T: WriteStd430,
