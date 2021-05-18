@@ -179,3 +179,39 @@ fn proper_offset_calculations_for_differing_member_sizes() {
         )
     )
 }
+
+#[derive(AsStd140, Debug, PartialEq)]
+struct ThereAndBackAgain {
+    view: mint::ColumnMatrix3<f32>,
+    origin: mint::Vector3<f32>,
+}
+
+#[test]
+fn there_and_back_again() {
+    let x = ThereAndBackAgain {
+        view: mint::ColumnMatrix3 {
+            x: mint::Vector3 {
+                x: 1.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            y: mint::Vector3 {
+                x: 0.0,
+                y: 1.0,
+                z: 0.0,
+            },
+            z: mint::Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: 1.0,
+            },
+        },
+        origin: mint::Vector3 {
+            x: 0.0,
+            y: 1.0,
+            z: 2.0,
+        },
+    };
+    let x_as = x.as_std140();
+    assert_eq!(<ThereAndBackAgain as AsStd140>::from_std140(x_as), x);
+}

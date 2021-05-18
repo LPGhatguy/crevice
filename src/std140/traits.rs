@@ -85,6 +85,9 @@ pub trait AsStd140 {
     fn std140_size_static() -> usize {
         size_of::<Self::Std140Type>()
     }
+
+    /// Converts from `std140` version of self to self.
+    fn from_std140(val: Self::Std140Type) -> Self;
 }
 
 impl<T> AsStd140 for T
@@ -95,6 +98,10 @@ where
 
     fn as_std140(&self) -> Self {
         *self
+    }
+
+    fn from_std140(x: Self) -> Self {
+        x
     }
 }
 
