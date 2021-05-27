@@ -166,7 +166,7 @@ impl<T: Std430, const PAD: usize> Std430Convertible<T> for Std430Padded<T, PAD> 
 #[doc(hidden)]
 #[derive(Copy, Clone, Debug)]
 #[repr(transparent)]
-pub struct Std430Array<T: Std430, const N: usize> ([T::Padded; N]);
+pub struct Std430Array<T: Std430, const N: usize>([T::Padded; N]);
 
 unsafe impl<T: Std430, const N: usize> Zeroable for Std430Array<T, N> where T::Padded: Zeroable {}
 unsafe impl<T: Std430, const N: usize> Pod for Std430Array<T, N> where T::Padded: Pod {}
@@ -184,23 +184,24 @@ where
 {
     type Std430Type = Std430Array<T::Std430Type, N>;
     fn as_std430(&self) -> Self::Std430Type {
-        let mut res: [MaybeUninit<<T::Std430Type as Std430>::Padded>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+        let mut res: [MaybeUninit<<T::Std430Type as Std430>::Padded>; N] =
+            unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
             res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
         }
 
-        unsafe {core::mem::transmute_copy(&res)}
+        unsafe { core::mem::transmute_copy(&res) }
     }
 
     fn from_std430(val: Self::Std430Type) -> Self {
-        let mut res: [MaybeUninit<T>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+        let mut res: [MaybeUninit<T>; N] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
             res[i] = MaybeUninit::new(AsStd430::from_std430(val.0[i].into_std430()));
         }
 
-        unsafe {core::mem::transmute_copy(&res)}
+        unsafe { core::mem::transmute_copy(&res) }
     }
 }
 

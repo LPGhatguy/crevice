@@ -184,23 +184,24 @@ where
 {
     type Std140Type = Std140Array<T::Std140Type, N>;
     fn as_std140(&self) -> Self::Std140Type {
-        let mut res: [MaybeUninit<<T::Std140Type as Std140>::Padded>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+        let mut res: [MaybeUninit<<T::Std140Type as Std140>::Padded>; N] =
+            unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
             res[i] = MaybeUninit::new(Std140Convertible::from_std140(self[i].as_std140()));
         }
 
-        unsafe {core::mem::transmute_copy(&res)}
+        unsafe { core::mem::transmute_copy(&res) }
     }
 
     fn from_std140(val: Self::Std140Type) -> Self {
-        let mut res: [MaybeUninit<T>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+        let mut res: [MaybeUninit<T>; N] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
             res[i] = MaybeUninit::new(AsStd140::from_std140(val.0[i].into_std140()));
         }
 
-        unsafe {core::mem::transmute_copy(&res)}
+        unsafe { core::mem::transmute_copy(&res) }
     }
 }
 
