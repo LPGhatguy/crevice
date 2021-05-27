@@ -1,4 +1,4 @@
-use core::mem::size_of;
+use core::mem::{size_of, MaybeUninit};
 #[cfg(feature = "std")]
 use std::io::{self, Write};
 
@@ -23,6 +23,10 @@ pub unsafe trait Std430: Copy + Zeroable + Pod {
     /// See <https://www.khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159>
     /// (rule 4 and 9)
     const PAD_AT_END: bool = false;
+    /// Padded type (Std430Padded specialization)
+    /// The usual implementation is
+    /// type Padded = Std430Padded<Self, {align_offset(size_of::<Self>(), ALIGNMENT)}>;
+    type Padded: Std430Convertible<Self>;
 
     /// Casts the type to a byte array. Implementors should not override this
     /// method.
@@ -35,6 +39,35 @@ pub unsafe trait Std430: Copy + Zeroable + Pod {
     }
 }
 
+/// Trait specifically for Std430::Padded, implements conversions between padded type and base type.
+pub trait Std430Convertible<T: Std430>: Copy {
+    /// Convert from self to Std430
+    fn into_std430(self) -> T;
+    /// Convert from Std430 to self
+    fn from_std430(_: T) -> Self;
+}
+
+impl<T: Std430> Std430Convertible<T> for T {
+    fn into_std430(self) -> T {
+        self
+    }
+    fn from_std430(also_self: T) -> Self {
+        also_self
+    }
+}
+
+/// Unfortunately, we cannot easily derive padded representation for generic Std140 types.
+/// For now, we'll just use this empty enum with no values.
+#[derive(Copy, Clone)]
+pub enum InvalidPadded {}
+impl<T: Std430> Std430Convertible<T> for InvalidPadded {
+    fn into_std430(self) -> T {
+        unimplemented!()
+    }
+    fn from_std430(_: T) -> Self {
+        unimplemented!()
+    }
+}
 /**
 Trait implemented for all types that can be turned into `std430` values.
 
@@ -106,6 +139,78 @@ where
 
     fn from_std430(value: Self) -> Self {
         value
+    }
+}
+
+#[doc(hidden)]
+#[derive(Copy, Clone, Debug)]
+pub struct Std430Padded<T: Std430, const PAD: usize> {
+    inner: T,
+    _padding: [u8; PAD],
+}
+
+unsafe impl<T: Std430, const PAD: usize> Zeroable for Std430Padded<T, PAD> {}
+unsafe impl<T: Std430, const PAD: usize> Pod for Std430Padded<T, PAD> {}
+
+impl<T: Std430, const PAD: usize> Std430Convertible<T> for Std430Padded<T, PAD> {
+    fn into_std430(self) -> T {
+        self.inner
+    }
+
+    fn from_std430(inner: T) -> Self {
+        Self {
+            inner,
+            _padding: [0u8; PAD],
+        }
+    }
+}
+
+#[doc(hidden)]
+#[derive(Copy, Clone, Debug)]
+#[repr(transparent)]
+pub struct Std430Array<T: Std430, const N: usize>([T::Padded; N]);
+
+unsafe impl<T: Std430, const N: usize> Zeroable for Std430Array<T, N> where T::Padded: Zeroable {}
+unsafe impl<T: Std430, const N: usize> Pod for Std430Array<T, N> where T::Padded: Pod {}
+unsafe impl<T: Std430, const N: usize> Std430 for Std430Array<T, N>
+where
+    T::Padded: Pod,
+{
+    const ALIGNMENT: usize = T::ALIGNMENT;
+    type Padded = Self;
+}
+
+impl<T: Std430, const N: usize> Std430Array<T, N> {
+    fn uninit_array() -> [MaybeUninit<T::Padded>; N] {
+        unsafe { MaybeUninit::uninit().assume_init() }
+    }
+
+    fn from_uninit_array(a: [MaybeUninit<T::Padded>; N]) -> Self {
+        unsafe { core::mem::transmute_copy(&a) }
+    }
+}
+
+impl<T: AsStd430, const N: usize> AsStd430 for [T; N]
+where
+    <T::Output as Std430>::Padded: Pod,
+{
+    type Output = Std430Array<T::Output, N>;
+    fn as_std430(&self) -> Self::Output {
+        let mut res = Self::Output::uninit_array();
+
+        for i in 0..N {
+            res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
+        }
+
+        return Self::Output::from_uninit_array(res);
+    }
+
+    fn from_std430(val: Self::Output) -> Self {
+        let mut res: [MaybeUninit<T>; N] = unsafe{ MaybeUninit::uninit().assume_init() };
+        for i in 0..N {
+            res[i] = MaybeUninit::new(T::from_std430(val.0[i].into_std430()));
+        }
+        unsafe {core::mem::transmute_copy(&res) }
     }
 }
 

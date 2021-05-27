@@ -1,22 +1,29 @@
 use bytemuck::{Pod, Zeroable};
 
 use crate::glsl::Glsl;
-use crate::std430::Std430;
+use crate::std430::{Std430, Std430Padded};
+
+use crate::internal::align_offset;
+use core::mem::size_of;
 
 unsafe impl Std430 for f32 {
     const ALIGNMENT: usize = 4;
+    type Padded = Self;
 }
 
 unsafe impl Std430 for f64 {
     const ALIGNMENT: usize = 8;
+    type Padded = Self;
 }
 
 unsafe impl Std430 for i32 {
     const ALIGNMENT: usize = 4;
+    type Padded = Self;
 }
 
 unsafe impl Std430 for u32 {
     const ALIGNMENT: usize = 4;
+    type Padded = Self;
 }
 
 macro_rules! vectors {
@@ -39,6 +46,7 @@ macro_rules! vectors {
 
             unsafe impl Std430 for $name {
                 const ALIGNMENT: usize = $align;
+                type Padded = Std430Padded<Self, {align_offset(size_of::<$name>(), $align)}>;
             }
 
             unsafe impl Glsl for $name {
@@ -98,6 +106,7 @@ macro_rules! matrices {
                 const ALIGNMENT: usize = $align;
                 /// Matrices are technically arrays of primitives, and as such require pad at end.
                 const PAD_AT_END: bool = true;
+                type Padded = Std430Padded<Self, {align_offset(size_of::<$name>(), $align)}>;
             }
 
             unsafe impl Glsl for $name {
