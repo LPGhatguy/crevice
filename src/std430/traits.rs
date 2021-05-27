@@ -1,8 +1,10 @@
 use core::mem::{size_of, MaybeUninit};
+#[cfg(feature = "std")]
 use std::io::{self, Write};
 
 use bytemuck::{bytes_of, Pod, Zeroable};
 
+#[cfg(feature = "std")]
 use crate::std430::Writer;
 
 /// Trait implemented for all `std430` primitives. Generally should not be
@@ -118,6 +120,9 @@ pub trait AsStd430 {
     fn std430_size_static() -> usize {
         size_of::<Self::Std430Type>()
     }
+
+    /// Converts from `std430` version of self to self.
+    fn from_std430(value: Self::Std430Type) -> Self;
 }
 
 impl<T> AsStd430 for T
@@ -128,6 +133,10 @@ where
 
     fn as_std430(&self) -> Self {
         *self
+    }
+
+    fn from_std430(value: Self) -> Self {
+        value
     }
 }
 
@@ -157,9 +166,7 @@ impl<T: Std430, const PAD: usize> Std430Convertible<T> for Std430Padded<T, PAD> 
 #[doc(hidden)]
 #[derive(Copy, Clone, Debug)]
 #[repr(transparent)]
-pub struct Std430Array<T: Std430, const N: usize> {
-    elts: [T::Padded; N],
-}
+pub struct Std430Array<T: Std430, const N: usize> ([T::Padded; N]);
 
 unsafe impl<T: Std430, const N: usize> Zeroable for Std430Array<T, N> where T::Padded: Zeroable {}
 unsafe impl<T: Std430, const N: usize> Pod for Std430Array<T, N> where T::Padded: Pod {}
@@ -171,33 +178,29 @@ where
     type Padded = Self;
 }
 
-impl<T: Std430, const N: usize> Std430Array<T, N> {
-    fn uninit_array() -> [MaybeUninit<T::Padded>; N] {
-        unsafe { MaybeUninit::uninit().assume_init() }
-    }
-
-    fn from_uninit_array(a: [MaybeUninit<T::Padded>; N]) -> Self {
-        unsafe { core::mem::transmute_copy(&a) }
-    }
-
-    fn size(_: [MaybeUninit<T::Padded>; N]) -> usize {
-        N
-    }
-}
-
 impl<T: AsStd430, const N: usize> AsStd430 for [T; N]
 where
     <T::Std430Type as Std430>::Padded: Pod,
 {
     type Std430Type = Std430Array<T::Std430Type, N>;
     fn as_std430(&self) -> Self::Std430Type {
-        let mut res = Self::Std430Type::uninit_array();
+        let mut res: [MaybeUninit<<T::Std430Type as Std430>::Padded>; N] = unsafe {MaybeUninit::uninit().assume_init()};
 
-        for i in 0..Self::Std430Type::size(res) {
+        for i in 0..N {
             res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
         }
 
-        return Self::Std430Type::from_uninit_array(res);
+        unsafe {core::mem::transmute_copy(&res)}
+    }
+
+    fn from_std430(val: Self::Std430Type) -> Self {
+        let mut res: [MaybeUninit<T>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+
+        for i in 0..N {
+            res[i] = MaybeUninit::new(AsStd430::from_std430(val.0[i].into_std430()));
+        }
+
+        unsafe {core::mem::transmute_copy(&res)}
     }
 }
 
@@ -209,6 +212,7 @@ where
 /// `Std430` trait, `WriteStd430` directly writes bytes using a [`Writer`]. This
 /// makes `WriteStd430` usable for writing slices or other DSTs that could not
 /// implement `AsStd430` without allocating new memory on the heap.
+#[cfg(feature = "std")]
 pub trait WriteStd430 {
     /// Writes this value into the given [`Writer`] using `std430` layout rules.
     ///
@@ -226,6 +230,7 @@ pub trait WriteStd430 {
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd430 for T
 where
     T: AsStd430,
@@ -239,6 +244,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd430 for [T]
 where
     T: WriteStd430,

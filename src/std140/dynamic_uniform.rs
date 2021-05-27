@@ -16,6 +16,10 @@ impl<T: AsStd140> AsStd140 for DynamicUniform<T> {
     fn as_std140(&self) -> Self::Std140Type {
         DynamicUniformStd140(self.0.as_std140())
     }
+
+    fn from_std140(value: Self::Std140Type) -> Self {
+        DynamicUniform(<T as AsStd140>::from_std140(value.0))
+    }
 }
 
 /// std140 variant of [`DynamicUniform`].

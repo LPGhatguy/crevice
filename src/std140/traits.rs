@@ -1,8 +1,10 @@
 use core::mem::{size_of, MaybeUninit};
+#[cfg(feature = "std")]
 use std::io::{self, Write};
 
 use bytemuck::{bytes_of, Pod, Zeroable};
 
+#[cfg(feature = "std")]
 use crate::std140::Writer;
 
 /// Trait implemented for all `std140` primitives. Generally should not be
@@ -118,6 +120,9 @@ pub trait AsStd140 {
     fn std140_size_static() -> usize {
         size_of::<Self::Std140Type>()
     }
+
+    /// Converts from `std140` version of self to self.
+    fn from_std140(val: Self::Std140Type) -> Self;
 }
 
 impl<T> AsStd140 for T
@@ -128,6 +133,10 @@ where
 
     fn as_std140(&self) -> Self {
         *self
+    }
+
+    fn from_std140(x: Self) -> Self {
+        x
     }
 }
 
@@ -169,33 +178,29 @@ where
     type Padded = Self;
 }
 
-impl<T: Std140, const N: usize> Std140Array<T, N> {
-    fn uninit_array() -> [MaybeUninit<T::Padded>; N] {
-        unsafe { MaybeUninit::uninit().assume_init() }
-    }
-
-    fn from_uninit_array(a: [MaybeUninit<T::Padded>; N]) -> Self {
-        unsafe { core::mem::transmute_copy(&a) }
-    }
-
-    fn size(_: [MaybeUninit<T::Padded>; N]) -> usize {
-        N
-    }
-}
-
 impl<T: AsStd140, const N: usize> AsStd140 for [T; N]
 where
     <T::Std140Type as Std140>::Padded: Pod,
 {
     type Std140Type = Std140Array<T::Std140Type, N>;
     fn as_std140(&self) -> Self::Std140Type {
-        let mut res = Self::Std140Type::uninit_array();
+        let mut res: [MaybeUninit<<T::Std140Type as Std140>::Padded>; N] = unsafe {MaybeUninit::uninit().assume_init()};
 
-        for i in 0..Self::Std140Type::size(res) {
+        for i in 0..N {
             res[i] = MaybeUninit::new(Std140Convertible::from_std140(self[i].as_std140()));
         }
 
-        return Self::Std140Type::from_uninit_array(res);
+        unsafe {core::mem::transmute_copy(&res)}
+    }
+
+    fn from_std140(val: Self::Std140Type) -> Self {
+        let mut res: [MaybeUninit<T>; N] = unsafe {MaybeUninit::uninit().assume_init()};
+
+        for i in 0..N {
+            res[i] = MaybeUninit::new(AsStd140::from_std140(val.0[i].into_std140()));
+        }
+
+        unsafe {core::mem::transmute_copy(&res)}
     }
 }
 
@@ -207,6 +212,7 @@ where
 /// `Std140` trait, `WriteStd140` directly writes bytes using a [`Writer`]. This
 /// makes `WriteStd140` usable for writing slices or other DSTs that could not
 /// implement `AsStd140` without allocating new memory on the heap.
+#[cfg(feature = "std")]
 pub trait WriteStd140 {
     /// Writes this value into the given [`Writer`] using `std140` layout rules.
     ///
@@ -224,6 +230,7 @@ pub trait WriteStd140 {
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd140 for T
 where
     T: AsStd140,
@@ -237,6 +244,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> WriteStd140 for [T]
 where
     T: WriteStd140,

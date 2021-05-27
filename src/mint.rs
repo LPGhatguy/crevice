@@ -16,6 +16,14 @@ macro_rules! mint_vectors {
                         )*
                     }
                 }
+
+                fn from_std140(value: Self::Std140Type) -> Self {
+                    Self {
+                        $(
+                            $field: value.$field,
+                        )*
+                    }
+                }
             }
 
             impl AsStd430 for $mint_ty {
@@ -25,6 +33,14 @@ macro_rules! mint_vectors {
                     std430::$std_name {
                         $(
                             $field: self.$field,
+                        )*
+                    }
+                }
+
+                fn from_std430(value: Self::Std430Type) -> Self {
+                    Self {
+                        $(
+                            $field: value.$field,
                         )*
                     }
                 }
@@ -69,6 +85,14 @@ macro_rules! mint_matrices {
                         ..Zeroable::zeroed()
                     }
                 }
+
+                fn from_std140(value: Self::Std140Type) -> Self {
+                    Self {
+                        $(
+                            $field: <_ as AsStd140>::from_std140(value.$field),
+                        )*
+                    }
+                }
             }
 
             impl AsStd430 for $mint_ty {
@@ -80,6 +104,14 @@ macro_rules! mint_matrices {
                             $field: self.$field.as_std430(),
                         )*
                         ..Zeroable::zeroed()
+                    }
+                }
+
+                fn from_std430(value: Self::Std430Type) -> Self {
+                    Self {
+                        $(
+                            $field: <_ as AsStd430>::from_std430(value.$field),
+                        )*
                     }
                 }
             }

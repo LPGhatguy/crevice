@@ -44,6 +44,9 @@ struct EmitOptions {
     /// The name of the method used to convert from AsTrait to Trait.
     as_trait_method: Ident,
 
+    // The name of the method used to convert from Trait to AsTrait.
+    from_trait_method: Ident,
+
     /// The name of the struct used for Padded type.
     padded_name: Ident,
 }
@@ -60,6 +63,7 @@ impl EmitOptions {
         let as_trait_path = parse_quote!(#mod_path::#as_trait_name);
         let as_trait_assoc = format_ident!("{}Type", layout_name);
         let as_trait_method = format_ident!("as_{}", mod_name);
+        let from_trait_method = format_ident!("from_{}", mod_name);
 
         let padded_name = format_ident!("{}Padded", layout_name);
 
@@ -72,6 +76,7 @@ impl EmitOptions {
             as_trait_path,
             as_trait_assoc,
             as_trait_method,
+            from_trait_method,
 
             padded_name,
         }
@@ -85,6 +90,7 @@ impl EmitOptions {
         let as_trait_path = &self.as_trait_path;
         let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
+        let from_trait_method = &self.from_trait_method;
         let padded_name = &self.padded_name;
 
         let visibility = input.vis;
@@ -134,7 +140,7 @@ impl EmitOptions {
                             let field_ty = &field.ty;
                             quote! {
                                 offset += #align_name();
-                                offset += ::std::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
+                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
                             }
                         });
 
@@ -206,6 +212,16 @@ impl EmitOptions {
             })
             .collect();
 
+        let field_unwrappers: Vec<_> = fields
+            .named
+            .iter()
+            .map(|field|{
+                let field_name = field.ident.as_ref().unwrap();
+                let field_ty = &field.ty;
+                quote!(#field_name: <#field_ty as #as_trait_path>::#from_trait_method(value.#field_name))
+            })
+            .collect();
+
         // This fold builds up an expression that finds the maximum alignment out of
         // all of the fields in the struct. For this struct:
         //
@@ -271,6 +287,12 @@ impl EmitOptions {
                         #( #field_initializers, )*
 
                         ..::crevice::internal::bytemuck::Zeroable::zeroed()
+                    }
+                }
+
+                fn #from_trait_method(value: Self::#as_trait_assoc) -> Self {
+                    Self {
+                        #( #field_unwrappers, )*
                     }
                 }
             }
