@@ -206,11 +206,11 @@ where
     }
 
     fn from_std140(val: Self::Output) -> Self {
-        let mut res: [MaybeUninit<T>; N] = unsafe{ MaybeUninit::uninit().assume_init() };
+        let mut res: [MaybeUninit<T>; N] = unsafe { MaybeUninit::uninit().assume_init() };
         for i in 0..N {
             res[i] = MaybeUninit::new(T::from_std140(Std140Convertible::into_std140(val.0[i])));
         }
-        unsafe {core::mem::transmute_copy(&res) }
+        unsafe { core::mem::transmute_copy(&res) }
     }
 }
 

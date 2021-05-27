@@ -328,7 +328,7 @@ fn proper_offset_calculations_for_differing_member_sizes() {
 fn array_strides_small_value() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430)]
     struct ArrayOfSmallValues {
-        inner: [f32; 4]
+        inner: [f32; 4],
     }
 
     assert_std140!((size = 64, align = 16) ArrayOfSmallValues {
@@ -344,7 +344,7 @@ fn array_strides_small_value() {
 fn array_strides_vec3() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430)]
     struct ArrayOfSmallValues {
-        inner: [Vector3<f32>; 4]
+        inner: [Vector3<f32>; 4],
     }
 
     assert_std140!((size = 64, align = 16) ArrayOfSmallValues {
