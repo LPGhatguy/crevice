@@ -88,6 +88,13 @@ pub trait AsStd430 {
         size_of::<Self::Std430Type>()
     }
 
+    /// Returns the size of the `std430` version of this type, rounded up to the alignment.
+    /// Useful for pre-sizing buffers.
+    fn std430_padded_size_static() -> usize {
+        (Self::std430_size_static() + Self::Std430Type::ALIGNMENT - 1)
+            & !(Self::Std430Type::ALIGNMENT - 1)
+    }
+
     /// Converts from `std430` version of self to self.
     fn from_std430(value: Self::Std430Type) -> Self;
 }
