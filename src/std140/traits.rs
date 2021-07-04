@@ -115,6 +115,10 @@ pub trait AsStd140 {
     /// Convert this value into the `std140` version of itself.
     fn as_std140(&self) -> Self::Std140Type;
 
+    /// Convert this value into the padded `std140` version of itself.
+    /// Compatible with WGSL
+    fn as_padded_std140(&self) -> <<Self as AsStd140>::Std140Type as Std140>::Padded;
+
     /// Returns the size of the `std140` version of this type. Useful for
     /// pre-sizing buffers.
     fn std140_size_static() -> usize {
@@ -124,8 +128,7 @@ pub trait AsStd140 {
     /// Returns the size of the `std140` version of this type, rounded up to the alignment.
     /// Useful for pre-sizing buffers.
     fn std140_padded_size_static() -> usize {
-        (Self::std140_size_static() + Self::Std140Type::ALIGNMENT - 1)
-            & !(Self::Std140Type::ALIGNMENT - 1)
+        size_of::<<<Self as AsStd140>::Std140Type as Std140>::Padded>()
     }
 
     /// Converts from `std140` version of self to self.
@@ -142,6 +145,10 @@ where
         *self
     }
 
+    fn as_padded_std140(&self) -> <<Self as AsStd140>::Std140Type as Std140>::Padded {
+        <<Self as AsStd140>::Std140Type as Std140>::Padded::from_std140(*self)
+    }
+
     fn from_std140(x: Self) -> Self {
         x
     }
@@ -152,6 +159,18 @@ where
 pub struct Std140Padded<T: Std140, const PAD: usize> {
     inner: T,
     _padding: [u8; PAD],
+}
+
+impl<T: Std140, const PAD: usize> Std140Padded<T, PAD> {
+    /// Casts the type to a byte array. Implementors should not override this
+    /// method.
+    ///
+    /// # Safety
+    /// This is always safe due to the requirements of [`bytemuck::Pod`] being a
+    /// prerequisite for this trait.
+    pub fn as_bytes(&self) -> &[u8] {
+        bytes_of(self)
+    }
 }
 
 unsafe impl<T: Std140, const PAD: usize> Zeroable for Std140Padded<T, PAD> {}
@@ -191,6 +210,17 @@ where
 {
     type Std140Type = Std140Array<T::Std140Type, N>;
     fn as_std140(&self) -> Self::Std140Type {
+        let mut res: [MaybeUninit<<T::Std140Type as Std140>::Padded>; N] =
+            unsafe { MaybeUninit::uninit().assume_init() };
+
+        for i in 0..N {
+            res[i] = MaybeUninit::new(Std140Convertible::from_std140(self[i].as_std140()));
+        }
+
+        unsafe { core::mem::transmute_copy(&res) }
+    }
+
+    fn as_padded_std140(&self) -> <<Self as AsStd140>::Std140Type as Std140>::Padded {
         let mut res: [MaybeUninit<<T::Std140Type as Std140>::Padded>; N] =
             unsafe { MaybeUninit::uninit().assume_init() };
 

@@ -1,7 +1,7 @@
 use bytemuck::Zeroable;
 
-use crate::std140::{self, AsStd140};
-use crate::std430::{self, AsStd430};
+use crate::std140::{self, AsStd140, Std140, Std140Convertible};
+use crate::std430::{self, AsStd430, Std430, Std430Convertible};
 
 macro_rules! mint_vectors {
     ( $( $mint_ty:ty, $std_name:ident, ( $($field:ident),* ), )* ) => {
@@ -15,6 +15,10 @@ macro_rules! mint_vectors {
                             $field: self.$field,
                         )*
                     }
+                }
+
+                fn as_padded_std140(&self) -> <<Self as AsStd140>::Std140Type as Std140>::Padded {
+                    <<std140::$std_name as AsStd140>::Std140Type as Std140>::Padded::from_std140(self.as_std140())
                 }
 
                 fn from_std140(value: Self::Std140Type) -> Self {
@@ -35,6 +39,10 @@ macro_rules! mint_vectors {
                             $field: self.$field,
                         )*
                     }
+                }
+
+                fn as_padded_std430(&self) -> <<Self as AsStd430>::Std430Type as Std430>::Padded {
+                    <<std430::$std_name as AsStd430>::Std430Type as Std430>::Padded::from_std430(self.as_std430())
                 }
 
                 fn from_std430(value: Self::Std430Type) -> Self {
@@ -86,6 +94,10 @@ macro_rules! mint_matrices {
                     }
                 }
 
+                fn as_padded_std140(&self) -> <<Self as AsStd140>::Std140Type as Std140>::Padded {
+                    <<std140::$std_name as AsStd140>::Std140Type as Std140>::Padded::from_std140(self.as_std140())
+                }
+
                 fn from_std140(value: Self::Std140Type) -> Self {
                     Self {
                         $(
@@ -105,6 +117,10 @@ macro_rules! mint_matrices {
                         )*
                         ..Zeroable::zeroed()
                     }
+                }
+
+                fn as_padded_std430(&self) -> <<Self as AsStd430>::Std430Type as Std430>::Padded {
+                    <<std430::$std_name as AsStd430>::Std430Type as Std430>::Padded::from_std430(self.as_std430())
                 }
 
                 fn from_std430(value: Self::Std430Type) -> Self {

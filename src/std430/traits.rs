@@ -115,6 +115,10 @@ pub trait AsStd430 {
     /// Convert this value into the `std430` version of itself.
     fn as_std430(&self) -> Self::Std430Type;
 
+    /// Convert this value into the padded `std430` version of itself.
+    /// Compatible with WGSL
+    fn as_padded_std430(&self) -> <<Self as AsStd430>::Std430Type as Std430>::Padded;
+
     /// Returns the size of the `std430` version of this type. Useful for
     /// pre-sizing buffers.
     fn std430_size_static() -> usize {
@@ -124,8 +128,7 @@ pub trait AsStd430 {
     /// Returns the size of the `std430` version of this type, rounded up to the alignment.
     /// Useful for pre-sizing buffers.
     fn std430_padded_size_static() -> usize {
-        (Self::std430_size_static() + Self::Std430Type::ALIGNMENT - 1)
-            & !(Self::Std430Type::ALIGNMENT - 1)
+        size_of::<<<Self as AsStd430>::Std430Type as Std430>::Padded>()
     }
 
     /// Converts from `std430` version of self to self.
@@ -142,6 +145,10 @@ where
         *self
     }
 
+    fn as_padded_std430(&self) -> <<Self as AsStd430>::Std430Type as Std430>::Padded {
+        <<Self as AsStd430>::Std430Type as Std430>::Padded::from_std430(*self)
+    }
+
     fn from_std430(value: Self) -> Self {
         value
     }
@@ -152,6 +159,18 @@ where
 pub struct Std430Padded<T: Std430, const PAD: usize> {
     inner: T,
     _padding: [u8; PAD],
+}
+
+impl<T: Std430, const PAD: usize> Std430Padded<T, PAD> {
+    /// Casts the type to a byte array. Implementors should not override this
+    /// method.
+    ///
+    /// # Safety
+    /// This is always safe due to the requirements of [`bytemuck::Pod`] being a
+    /// prerequisite for this trait.
+    pub fn as_bytes(&self) -> &[u8] {
+        bytes_of(self)
+    }
 }
 
 unsafe impl<T: Std430, const PAD: usize> Zeroable for Std430Padded<T, PAD> {}
@@ -191,6 +210,17 @@ where
 {
     type Std430Type = Std430Array<T::Std430Type, N>;
     fn as_std430(&self) -> Self::Std430Type {
+        let mut res: [MaybeUninit<<T::Std430Type as Std430>::Padded>; N] =
+            unsafe { MaybeUninit::uninit().assume_init() };
+
+        for i in 0..N {
+            res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
+        }
+
+        unsafe { core::mem::transmute_copy(&res) }
+    }
+
+    fn as_padded_std430(&self) -> <<Self as AsStd430>::Std430Type as Std430>::Padded {
         let mut res: [MaybeUninit<<T::Std430Type as Std430>::Padded>; N] =
             unsafe { MaybeUninit::uninit().assume_init() };
 
