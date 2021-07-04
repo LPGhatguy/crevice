@@ -150,7 +150,7 @@ fn matrix_uniform_std430() {
 
 /// Rust size: 4, align: 4
 /// Std140 size: 4, align: 16
-#[derive(AsStd140)]
+#[derive(AsStd140, AsStd430)]
 struct PaddedByStdButNotRust {
     x: f32,
 }
@@ -214,4 +214,22 @@ fn there_and_back_again() {
     };
     let x_as = x.as_std140();
     assert_eq!(<ThereAndBackAgain as AsStd140>::from_std140(x_as), x);
+}
+
+#[derive(AsStd140, AsStd430)]
+struct HasArraysInIt {
+    of_primitives: [f32; 4],
+    of_vec3: [mint::Vector3<f32>; 5],
+    of_large_alignment: [mint::Vector4<f64>; 6],
+    of_structs: [PaddedByStdButNotRust; 7],
+}
+
+#[test]
+fn array_strides_std140() {
+    assert_yaml_snapshot!(<<HasArraysInIt as AsStd140>::Std140Type as TypeLayout>::type_layout());
+}
+
+#[test]
+fn array_strides_std430() {
+    assert_yaml_snapshot!(<<HasArraysInIt as AsStd430>::Std430Type as TypeLayout>::type_layout());
 }
