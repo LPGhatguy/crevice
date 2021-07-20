@@ -46,6 +46,9 @@ struct EmitOptions {
 
     // The name of the method used to convert from Trait to AsTrait.
     from_trait_method: Ident,
+
+    /// The name of the struct used for Padded type.
+    padded_name: Ident,
 }
 
 impl EmitOptions {
@@ -62,6 +65,8 @@ impl EmitOptions {
         let as_trait_method = format_ident!("as_{}", mod_name);
         let from_trait_method = format_ident!("from_{}", mod_name);
 
+        let padded_name = format_ident!("{}Padded", layout_name);
+
         Self {
             layout_name,
             min_struct_alignment,
@@ -72,6 +77,8 @@ impl EmitOptions {
             as_trait_assoc,
             as_trait_method,
             from_trait_method,
+
+            padded_name,
         }
     }
 
@@ -84,6 +91,7 @@ impl EmitOptions {
         let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
         let from_trait_method = &self.from_trait_method;
+        let padded_name = &self.padded_name;
 
         let visibility = input.vis;
 
@@ -265,6 +273,10 @@ impl EmitOptions {
             unsafe impl #impl_generics #mod_path::#layout_name for #generated_name #ty_generics #where_clause {
                 const ALIGNMENT: usize = #struct_alignment;
                 const PAD_AT_END: bool = true;
+                type Padded = #mod_path::#padded_name<Self, {::crevice::internal::align_offset(
+                    ::core::mem::size_of::<#generated_name>(),
+                    #struct_alignment
+                )}>;
             }
 
             impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
