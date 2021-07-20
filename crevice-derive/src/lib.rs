@@ -34,6 +34,10 @@ struct EmitOptions {
     /// The fully-qualified path to the trait defining a type in this layout.
     trait_path: Path,
 
+    /// The trait implemented for types that can be converted into this layout,
+    /// like AsStd140.
+    as_trait_name: Ident,
+
     /// The fully-qualified path to the trait implemented for types that can be
     /// converted into this layout, like AsStd140.
     as_trait_path: Path,
@@ -44,8 +48,14 @@ struct EmitOptions {
     /// The name of the method used to convert from AsTrait to Trait.
     as_trait_method: Ident,
 
+    /// The name of the method used to convert from AsTrait to TraitPadded.
+    as_padded_trait_method: Ident,
+
     // The name of the method used to convert from Trait to AsTrait.
     from_trait_method: Ident,
+
+    /// The name of the struct used for Padded type.
+    padded_name: Ident,
 }
 
 impl EmitOptions {
@@ -60,7 +70,10 @@ impl EmitOptions {
         let as_trait_path = parse_quote!(#mod_path::#as_trait_name);
         let as_trait_assoc = format_ident!("{}Type", layout_name);
         let as_trait_method = format_ident!("as_{}", mod_name);
+        let as_padded_trait_method = format_ident!("as_padded_{}", mod_name);
         let from_trait_method = format_ident!("from_{}", mod_name);
+
+        let padded_name = format_ident!("{}Padded", layout_name);
 
         Self {
             layout_name,
@@ -68,10 +81,14 @@ impl EmitOptions {
 
             mod_path,
             trait_path,
+            as_trait_name,
             as_trait_path,
             as_trait_assoc,
             as_trait_method,
+            as_padded_trait_method,
             from_trait_method,
+
+            padded_name,
         }
     }
 
@@ -80,10 +97,13 @@ impl EmitOptions {
         let layout_name = &self.layout_name;
         let mod_path = &self.mod_path;
         let trait_path = &self.trait_path;
+        let as_trait_name = &self.as_trait_name;
         let as_trait_path = &self.as_trait_path;
         let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
+        let as_padded_trait_method = &self.as_padded_trait_method;
         let from_trait_method = &self.from_trait_method;
+        let padded_name = &self.padded_name;
 
         let visibility = input.vis;
 
@@ -265,6 +285,10 @@ impl EmitOptions {
             unsafe impl #impl_generics #mod_path::#layout_name for #generated_name #ty_generics #where_clause {
                 const ALIGNMENT: usize = #struct_alignment;
                 const PAD_AT_END: bool = true;
+                type Padded = #mod_path::#padded_name<Self, {::crevice::internal::align_offset(
+                    ::core::mem::size_of::<#generated_name>(),
+                    #struct_alignment
+                )}>;
             }
 
             impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
@@ -276,6 +300,10 @@ impl EmitOptions {
 
                         ..::crevice::internal::bytemuck::Zeroable::zeroed()
                     }
+                }
+
+                fn #as_padded_trait_method(&self) -> <<Self as #as_trait_name>::#as_trait_assoc as #layout_name>::Padded {
+                    <<Self as #as_trait_name>::#as_trait_assoc as #layout_name>::Padded::#from_trait_method(self.#as_trait_method())
                 }
 
                 fn #from_trait_method(value: Self::#as_trait_assoc) -> Self {

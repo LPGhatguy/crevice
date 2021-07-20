@@ -1,0 +1,44 @@
+---
+source: tests/std140.rs
+expression: "<<HasArraysInIt as AsStd430>::Std430Type as TypeLayout>::type_layout()"
+
+---
+name: Std430HasArraysInIt
+size: 320
+alignment: 8
+fields:
+  - Field:
+      name: _of_primitives_align
+      ty: "[u8 ; Std430HasArraysInItAlignment :: _of_primitives_align()]"
+      size: 0
+  - Field:
+      name: of_primitives
+      ty: "< [f32 ; 4] as :: crevice :: std430 :: AsStd430 > :: Std430Type"
+      size: 16
+  - Field:
+      name: _of_vec3_align
+      ty: "[u8 ; Std430HasArraysInItAlignment :: _of_vec3_align()]"
+      size: 0
+  - Field:
+      name: of_vec3
+      ty: "< [mint :: Vector3 < f32 > ; 5] as :: crevice :: std430 :: AsStd430 > ::\nStd430Type"
+      size: 80
+  - Field:
+      name: _of_large_alignment_align
+      ty: "[u8 ; Std430HasArraysInItAlignment :: _of_large_alignment_align()]"
+      size: 0
+  - Field:
+      name: of_large_alignment
+      ty: "< [mint :: Vector4 < f64 > ; 6] as :: crevice :: std430 :: AsStd430 > ::\nStd430Type"
+      size: 192
+  - Field:
+      name: _of_structs_align
+      ty: "[u8 ; Std430HasArraysInItAlignment :: _of_structs_align()]"
+      size: 0
+  - Field:
+      name: of_structs
+      ty: "< [PaddedByStdButNotRust ; 7] as :: crevice :: std430 :: AsStd430 > ::\nStd430Type"
+      size: 28
+  - Padding:
+      size: 4
+
