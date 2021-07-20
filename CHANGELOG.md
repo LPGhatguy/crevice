@@ -2,6 +2,20 @@
 
 ## Unreleased Changes
 
+## [0.7.0][0.7.0] (2021-07-20)
+* Added `ivec`, `uvec`, and `bvec` structs ([#18][#18])
+* Improved padding behavior for structs and matrices ([#20][#20])
+* Implemented Crevice traits for more types ([#23][#23])
+* Added conversions from Std* types to AsStd* types ([#24][#24])
+* Added no_std support ([#25][#25])
+
+[#18]: https://github.com/LPGhatguy/crevice/pull/18
+[#20]: https://github.com/LPGhatguy/crevice/pull/20
+[#23]: https://github.com/LPGhatguy/crevice/pull/23
+[#24]: https://github.com/LPGhatguy/crevice/pull/24
+[#25]: https://github.com/LPGhatguy/crevice/pull/25
+[0.7.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.0
+
 ## [0.6.0][0.6.0] (2021-02-24)
 * Added `std430` support. Most APIs between `std140` and `std430` are the same!
 * Added the `WriteStd140` trait. This trait is more general than `AsStd140` and is automatically implemented for all existing `AsStd140` implementers.
