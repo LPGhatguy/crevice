@@ -7,7 +7,9 @@
 
 [0.7.1]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.1
 
-## [0.7.0][0.7.0] (2021-07-20)
+## [0.7.0][0.7.0] (2021-07-20) (Yanked)
+**This release was yanked due to an issue reported in [#32][#32].**
+
 * Added `ivec`, `uvec`, and `bvec` structs ([#18][#18])
 * Improved padding behavior for structs and matrices ([#20][#20])
 * Implemented Crevice traits for more types ([#23][#23])
@@ -19,6 +21,7 @@
 [#23]: https://github.com/LPGhatguy/crevice/pull/23
 [#24]: https://github.com/LPGhatguy/crevice/pull/24
 [#25]: https://github.com/LPGhatguy/crevice/pull/25
+[#32]: https://github.com/LPGhatguy/crevice/issues/32
 [0.7.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.0
 
 ## [0.6.0][0.6.0] (2021-02-24)
