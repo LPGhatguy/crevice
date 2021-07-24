@@ -2,6 +2,11 @@
 
 ## Unreleased Changes
 
+## [0.7.1][0.7.1] (2021-07-24)
+* Fixed broken crates.io release by publishing crevice-derive too.
+
+[0.7.1]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.1
+
 ## [0.7.0][0.7.0] (2021-07-20)
 * Added `ivec`, `uvec`, and `bvec` structs ([#18][#18])
 * Improved padding behavior for structs and matrices ([#20][#20])
