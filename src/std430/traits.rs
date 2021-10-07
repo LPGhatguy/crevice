@@ -17,9 +17,10 @@ pub unsafe trait Std430: Copy + Zeroable + Pod {
     /// control and zero their padding bytes, making converting them to and from
     /// slices safe.
     const ALIGNMENT: usize;
+
     /// Whether this type requires a padding at the end (ie, is a struct or an array
     /// of primitives).
-    /// See https://www.khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
+    /// See <https://www.khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159>
     /// (rule 4 and 9)
     const PAD_AT_END: bool = false;
 

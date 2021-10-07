@@ -22,8 +22,8 @@ vek.
 
 #### Single Value
 
-Uploading many types can be done by deriving `AsStd140` and using
-[`as_std140`][std140::AsStd140::as_std140] and
+Uploading many types can be done by deriving [`AsStd140`][std140::AsStd140] and
+using [`as_std140`][std140::AsStd140::as_std140] and
 [`as_bytes`][std140::Std140::as_bytes] to turn the result into bytes.
 
 ```glsl
@@ -59,7 +59,8 @@ upload_data_to_gpu(value_std140.as_bytes());
 
 #### Sequential Types
 
-More complicated data can be uploaded using the std140 `Writer` type.
+More complicated data can be uploaded using the std140
+[`Writer`][std140::Writer] type.
 
 ```glsl
 struct PointLight {
@@ -115,16 +116,23 @@ unmap_gpu_buffer();
 
 ### Features
 
-* `std` (default): Enables `std::io::Write`-based structs.
+* `std` (default): Enables [`std::io::Write`]-based structs.
 
 ### Minimum Supported Rust Version (MSRV)
 
 Crevice supports Rust 1.46.0 and newer due to use of new `const fn` features.
 
 [glsl-layout]: https://github.com/rustgd/glsl-layout
-[Zeroable]: https://docs.rs/bytemuck/latest/bytemuck/trait.Zeroable.html
-[Pod]: https://docs.rs/bytemuck/latest/bytemuck/trait.Pod.html
-[TypeLayout]: https://docs.rs/type-layout/latest/type_layout/trait.TypeLayout.html
+
+[std140::AsStd140]: https://docs.rs/crevice/latest/crevice/std140/trait.AsStd140.html
+[std140::AsStd140::as_std140]: https://docs.rs/crevice/latest/crevice/std140/trait.AsStd140.html#method.as_std140
+[std140::Std140::as_bytes]: https://docs.rs/crevice/latest/crevice/std140/trait.Std140.html#method.as_bytes
+[std140::Writer]: https://docs.rs/crevice/latest/crevice/std140/struct.Writer.html
+
+[`std::io::Write`]: https://doc.rust-lang.org/stable/std/io/trait.Write.html
+
+[`bytemuck::Pod`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Pod.html
+[`bytemuck::Zeroable`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Zeroable.html
 
 ## License
 
