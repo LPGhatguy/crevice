@@ -2,19 +2,19 @@
 
 ## Unreleased Changes
 
-## [0.7.1][0.7.1] (2021-07-24)
+## [0.7.1] - 2021-07-24
 * Fixed broken crates.io release by publishing crevice-derive too.
 
 [0.7.1]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.1
 
-## [0.7.0][0.7.0] (2021-07-20) (Yanked)
-**This release was yanked due to an issue reported in [#32][#32].**
+## [0.7.0] - 2021-07-20 (Yanked)
+**This release was yanked due to an issue reported in [#32].**
 
-* Added `ivec`, `uvec`, and `bvec` structs ([#18][#18])
-* Improved padding behavior for structs and matrices ([#20][#20])
-* Implemented Crevice traits for more types ([#23][#23])
-* Added conversions from Std* types to AsStd* types ([#24][#24])
-* Added no_std support ([#25][#25])
+* Added `ivec`, `uvec`, and `bvec` structs ([#18])
+* Improved padding behavior for structs and matrices ([#20])
+* Implemented Crevice traits for more types ([#23])
+* Added conversions from Std* types to AsStd* types ([#24])
+* Added no_std support ([#25])
 
 [#18]: https://github.com/LPGhatguy/crevice/pull/18
 [#20]: https://github.com/LPGhatguy/crevice/pull/20
@@ -24,7 +24,7 @@
 [#32]: https://github.com/LPGhatguy/crevice/issues/32
 [0.7.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.7.0
 
-## [0.6.0][0.6.0] (2021-02-24)
+## [0.6.0] - 2021-02-24
 * Added `std430` support. Most APIs between `std140` and `std430` are the same!
 * Added the `WriteStd140` trait. This trait is more general than `AsStd140` and is automatically implemented for all existing `AsStd140` implementers.
 * Added `Writer::write_std140` to write a type that implements `Std140`.
@@ -35,27 +35,37 @@
 
 [0.6.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.6.0
 
-## 0.5.0 (2020-10-18)
+## [0.5.0] - 2020-10-18
 * Added f64-based std140 types: `DVec2`, `DVec3`, `DVec4`, `DMat2`, `DMat3`, and `DMat4`.
 * Added support for std140 structs with alignment greater than 16.
 * Fixed padding for std140 matrices; they were previously missing trailing padding.
 
-## 0.4.0 (2020-10-01)
+[0.5.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.5.0
+
+## [0.4.0] - 2020-10-01
 * Added `AsStd140::std140_size` for easily pre-sizing buffers.
 * `Writer::write` and `Sizer::add` now return the offset the value is or would be written to.
 * Added `std140::DynamicUniform` for aligning dynamic uniform members.
 * Added `Writer::write_slice` for writing multiple values in a row.
 
-## 0.3.0 (2020-09-22)
+[0.4.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.4.0
+
+## [0.3.0] - 2020-09-22
 * Added `Std140::as_bytes`, reducing the need to work with bytemuck directly.
 * Removed public re-export of bytemuck.
 
-## 0.2.0 (2020-09-22)
+[0.3.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.3.0
+
+## [0.2.0] - 2020-09-22
 * Added documentation for everything in the crate.
 * Removed `type_layout` being exposed except for internal tests.
 * Fixed alignment offset not taking into account previously added alignment.
 * Added `std140::Writer`, for writing dynamically laid out types to buffers.
 * Added `std140::Sizer`, for pre-calculating buffer sizes.
 
-## 0.1.0 (2020-09-18)
+[0.2.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.2.0
+
+## [0.1.0] - 2020-09-18
 * Initial MVP release
+
+[0.1.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.1.0
