@@ -9,6 +9,7 @@ edition = "2018"
 crevice = { path = ".." }
 wgpu = "0.11.0"
 mint = "0.5.5"
+naga = { version = "0.7.0", features = ["glsl-in", "wgsl-out"] }
 futures = { version = "0.3.17", features = ["executor"] }
 bytemuck = "1.7.2"
 type-layout = { version = "0.2.0", features = ["serde1"] }

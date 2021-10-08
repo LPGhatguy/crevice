@@ -40,7 +40,7 @@ fn vec2() {
     }
 
     run_test!(
-        "../shaders/vec2.wgsl",
+        "../shaders/vec2.comp",
         TestData {
             two: Vector2 { x: 1.0, y: 2.0 },
         }
@@ -71,9 +71,11 @@ fn setup() -> (wgpu::Device, wgpu::Queue) {
 fn round_trip<T: AsStd140>(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
-    shader: &'static str,
+    glsl_shader: &str,
     value: &T,
 ) -> <T as AsStd140>::Std140Type {
+    let shader = compile(glsl_shader);
+
     let mut data = Vec::new();
     data.extend_from_slice(value.as_std140().as_bytes());
 
@@ -101,7 +103,7 @@ fn round_trip<T: AsStd140>(
 
     let cs_module = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
         label: None,
-        source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(shader)),
+        source: wgpu::ShaderSource::Wgsl(Cow::Owned(shader)),
     });
 
     let compute_pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
@@ -165,4 +167,29 @@ fn round_trip<T: AsStd140>(
     output_cpu_buffer.unmap();
 
     result
+}
+
+fn compile(glsl_source: &str) -> String {
+    let mut parser = naga::front::glsl::Parser::default();
+
+    let module = parser
+        .parse(
+            &naga::front::glsl::Options {
+                stage: naga::ShaderStage::Compute,
+                defines: Default::default(),
+            },
+            glsl_source,
+        )
+        .unwrap();
+
+    let info = naga::valid::Validator::new(
+        naga::valid::ValidationFlags::default(),
+        naga::valid::Capabilities::all(),
+    )
+    .validate(&module)
+    .unwrap();
+
+    let wgsl = naga::back::wgsl::write_string(&module, &info).unwrap();
+
+    wgsl
 }
