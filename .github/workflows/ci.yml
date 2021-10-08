@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -35,3 +34,12 @@ jobs:
         cargo fmt -- --check
         cargo clippy --all-features
       if: matrix.rust_version == 'stable'
+
+  wgpu-validation:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run Validation Tests
+      run: cargo test --all --verbose

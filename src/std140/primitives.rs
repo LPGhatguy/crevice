@@ -27,7 +27,7 @@ macro_rules! vectors {
         $(
             #[$doc]
             #[allow(missing_docs)]
-            #[derive(Debug, Clone, Copy)]
+            #[derive(Debug, Clone, Copy, PartialEq)]
             pub struct $name {
                 $(pub $field: $prim,)+
             }
