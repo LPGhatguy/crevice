@@ -4,25 +4,58 @@ use std::borrow::Cow;
 
 use crevice::std140::{AsStd140, Std140};
 use futures::executor::block_on;
-use mint::Vector2;
+use mint::{Vector2, Vector3, Vector4};
 use wgpu::util::DeviceExt;
 
-macro_rules! run_test {
-    ($shader_path:literal, $ty:ident {
-        $(
-            $key:ident : $value:expr,
-        )+
-    }) => {
+const BASE_SHADER: &str = "
+#version 450
+
+struct TestData {
+    {fields}
+};
+
+layout({layout}, set = 0, binding = 0) readonly buffer INPUT {
+    TestData in_data;
+};
+
+layout({layout}, set = 0, binding = 1) buffer OUTPUT {
+    TestData out_data;
+};
+
+void main() {
+    out_data = in_data;
+}";
+
+macro_rules! roundtrip_through_glsl {
+    ($layout:ident
+        glsl {
+            $(
+                $glsl_ty:ident $glsl_name:ident;
+            )+
+        }
+        $ty:ident {
+            $(
+                $key:ident : $value:expr,
+            )+
+        }
+    ) => {
         let (device, queue) = setup();
 
         let input = $ty {
             $($key: $value,)+
         };
 
+        let mut fields = String::new();
+        $(fields.push_str(stringify!($glsl_ty $glsl_name;));)+
+
+        let shader = BASE_SHADER
+            .replace("{fields}", &fields)
+            .replace("{layout}", stringify!($layout));
+
         let output = round_trip(
             &device,
             &queue,
-            include_str!($shader_path),
+            &shader,
             &input,
         );
 
@@ -39,24 +72,64 @@ fn vec2() {
         two: Vector2<f32>,
     }
 
-    run_test!(
-        "../shaders/vec2.comp",
+    roundtrip_through_glsl! {
+        std140
+        glsl {
+            vec2 two;
+        }
         TestData {
             two: Vector2 { x: 1.0, y: 2.0 },
         }
-    );
+    }
+}
+
+#[test]
+fn double_vec4() {
+    #[derive(AsStd140)]
+    struct TestData {
+        one: Vector4<f32>,
+        two: Vector4<f32>,
+    }
+
+    roundtrip_through_glsl! {
+        std140
+        glsl {
+            vec4 one;
+            vec4 two;
+        }
+        TestData {
+            one: Vector4 { x: 1.0, y: 2.0, z: 3.0, w: 4.0 },
+            two: Vector4 { x: 5.0, y: 6.0, z: 7.0, w: 8.0 },
+        }
+    }
+}
+
+#[test]
+fn double_vec3() {
+    #[derive(AsStd140)]
+    struct TestData {
+        one: Vector3<f32>,
+        two: Vector3<f32>,
+    }
+
+    roundtrip_through_glsl! {
+        std140
+        glsl {
+            vec3 one;
+            vec3 two;
+        }
+        TestData {
+            one: Vector3 { x: 1.0, y: 2.0, z: 3.0 },
+            two: Vector3 { x: 4.0, y: 5.0, z: 6.0 },
+        }
+    }
 }
 
 fn setup() -> (wgpu::Device, wgpu::Queue) {
-    // Instantiates instance of WebGPU
     let instance = wgpu::Instance::new(wgpu::Backends::all());
-
-    // `request_adapter` instantiates the general connection to the GPU
     let adapter =
         block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).unwrap();
 
-    // `request_device` instantiates the feature specific connection to the GPU, defining some parameters,
-    //  `features` being the available features.
     block_on(adapter.request_device(
         &wgpu::DeviceDescriptor {
             label: None,
@@ -74,7 +147,13 @@ fn round_trip<T: AsStd140>(
     glsl_shader: &str,
     value: &T,
 ) -> <T as AsStd140>::Std140Type {
-    let shader = compile(glsl_shader);
+    let shader = match compile(glsl_shader) {
+        Ok(shader) => shader,
+        Err(err) => {
+            eprintln!("Bad shader: {}", glsl_shader);
+            panic!("{}", err);
+        }
+    };
 
     let mut data = Vec::new();
     data.extend_from_slice(value.as_std140().as_bytes());
@@ -113,7 +192,6 @@ fn round_trip<T: AsStd140>(
         entry_point: "main",
     });
 
-    // Instantiates the bind group, once again specifying the binding of buffers.
     let bind_group_layout = compute_pipeline.get_bind_group_layout(0);
     let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
         label: None,
@@ -153,11 +231,7 @@ fn round_trip<T: AsStd140>(
     let output_slice = output_cpu_buffer.slice(..);
     let output_future = output_slice.map_async(wgpu::MapMode::Read);
 
-    // Poll the device in a blocking manner so that our future resolves.
-    // In an actual application, `device.poll(...)` should
-    // be called in an event loop or on another thread.
     device.poll(wgpu::Maintain::Wait);
-
     block_on(output_future).unwrap();
 
     let output = output_slice.get_mapped_range();
@@ -169,7 +243,7 @@ fn round_trip<T: AsStd140>(
     result
 }
 
-fn compile(glsl_source: &str) -> String {
+fn compile(glsl_source: &str) -> anyhow::Result<String> {
     let mut parser = naga::front::glsl::Parser::default();
 
     let module = parser
@@ -180,16 +254,15 @@ fn compile(glsl_source: &str) -> String {
             },
             glsl_source,
         )
-        .unwrap();
+        .map_err(|err| anyhow::format_err!("{:?}", err))?;
 
     let info = naga::valid::Validator::new(
         naga::valid::ValidationFlags::default(),
         naga::valid::Capabilities::all(),
     )
-    .validate(&module)
-    .unwrap();
+    .validate(&module)?;
 
-    let wgsl = naga::back::wgsl::write_string(&module, &info).unwrap();
+    let wgsl = naga::back::wgsl::write_string(&module, &info)?;
 
-    wgsl
+    Ok(wgsl)
 }

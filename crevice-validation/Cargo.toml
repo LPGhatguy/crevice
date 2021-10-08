@@ -6,6 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.44"
 crevice = { path = ".." }
 wgpu = "0.11.0"
 mint = "0.5.5"
