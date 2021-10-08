@@ -236,6 +236,18 @@ impl EmitOptions {
             },
         );
 
+        let glsl_fields = fields.named.iter().map(|field| {
+            let field_name = field.ident.as_ref().unwrap();
+            let field_ty = &field.ty;
+            quote! {
+                output.push('\t');
+                output.push_str(<<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::GLSL_NAME);
+                output.push(' ');
+                output.push_str(stringify!(#field_name));
+                output.push_str(";\n");
+            }
+        });
+
         // For testing purposes, we can optionally generate type layout
         // information using the type-layout crate.
         let type_layout_derive = if cfg!(feature = "test_type_layout") {
@@ -265,6 +277,7 @@ impl EmitOptions {
             unsafe impl #impl_generics #mod_path::#layout_name for #generated_name #ty_generics #where_clause {
                 const ALIGNMENT: usize = #struct_alignment;
                 const PAD_AT_END: bool = true;
+                const GLSL_NAME: &'static str = stringify!(#generated_name);
             }
 
             impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
@@ -282,6 +295,19 @@ impl EmitOptions {
                     Self {
                         #( #field_unwrappers, )*
                     }
+                }
+            }
+
+            impl #impl_generics #generated_name #ty_generics #where_clause {
+                fn glsl_definition() -> String {
+                    let mut output = String::new();
+                    output.push_str(stringify!(#name));
+                    output.push_str(" {\n");
+
+                    #( #glsl_fields )*
+
+                    output.push_str("};");
+                    output
                 }
             }
         }

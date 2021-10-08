@@ -28,6 +28,7 @@ pub struct DynamicUniformStd140<T>(T);
 
 unsafe impl<T: Std140> Std140 for DynamicUniformStd140<T> {
     const ALIGNMENT: usize = max(256, T::ALIGNMENT);
+    const GLSL_NAME: &'static str = T::GLSL_NAME;
 }
 
 unsafe impl<T: Zeroable> Zeroable for DynamicUniformStd140<T> {}

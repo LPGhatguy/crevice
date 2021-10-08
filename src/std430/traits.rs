@@ -24,6 +24,9 @@ pub unsafe trait Std430: Copy + Zeroable + Pod {
     /// (rule 4 and 9)
     const PAD_AT_END: bool = false;
 
+    /// The name of this primitive in GLSL, like `vec2` or `mat4`.
+    const GLSL_NAME: &'static str;
+
     /// Casts the type to a byte array. Implementors should not override this
     /// method.
     ///
