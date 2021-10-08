@@ -301,6 +301,7 @@ impl EmitOptions {
             impl #impl_generics #generated_name #ty_generics #where_clause {
                 fn glsl_definition() -> String {
                     let mut output = String::new();
+                    output.push_str("struct ");
                     output.push_str(stringify!(#name));
                     output.push_str(" {\n");
 
