@@ -1,6 +1,7 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Increased MSRV to 1.51.0.
 
 ## [0.7.1] - 2021-07-24
 * Fixed broken crates.io release by publishing crevice-derive too.
