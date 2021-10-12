@@ -1,25 +1,22 @@
 use bytemuck::{Pod, Zeroable};
 
+use crate::glsl::Glsl;
 use crate::std140::Std140;
 
 unsafe impl Std140 for f32 {
     const ALIGNMENT: usize = 4;
-    const GLSL_NAME: &'static str = "float";
 }
 
 unsafe impl Std140 for f64 {
     const ALIGNMENT: usize = 8;
-    const GLSL_NAME: &'static str = "double";
 }
 
 unsafe impl Std140 for i32 {
     const ALIGNMENT: usize = 4;
-    const GLSL_NAME: &'static str = "int";
 }
 
 unsafe impl Std140 for u32 {
     const ALIGNMENT: usize = 4;
-    const GLSL_NAME: &'static str = "uint";
 }
 
 macro_rules! vectors {
@@ -41,7 +38,10 @@ macro_rules! vectors {
 
             unsafe impl Std140 for $name {
                 const ALIGNMENT: usize = $align;
-                const GLSL_NAME: &'static str = stringify!($glsl_name);
+            }
+
+            unsafe impl Glsl for $name {
+                const NAME: &'static str = stringify!($glsl_name);
             }
         )+
     };
@@ -94,7 +94,10 @@ macro_rules! matrices {
                 const ALIGNMENT: usize = $align;
                 /// Matrices are technically arrays of primitives, and as such require pad at end.
                 const PAD_AT_END: bool = true;
-                const GLSL_NAME: &'static str = stringify!($glsl_name);
+            }
+
+            unsafe impl Glsl for $name {
+                const NAME: &'static str = stringify!($glsl_name);
             }
         )+
     };

@@ -141,7 +141,6 @@ struct MatrixUniform {
 #[test]
 fn matrix_uniform_std140() {
     assert_yaml_snapshot!(<<MatrixUniform as AsStd140>::Std140Type as TypeLayout>::type_layout());
-    insta::assert_display_snapshot!(<MatrixUniform as AsStd140>::Std140Type::glsl_definition());
 }
 
 #[test]

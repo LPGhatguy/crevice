@@ -133,6 +133,7 @@ Crevice supports Rust 1.51.0 and newer due to use of new `const fn` features.
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod glsl;
 pub mod std140;
 pub mod std430;
 
