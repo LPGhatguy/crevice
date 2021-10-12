@@ -2,6 +2,7 @@
 
 use std::borrow::Cow;
 
+use crevice::glsl::GlslStruct;
 use crevice::std140::{AsStd140, Std140};
 use futures::executor::block_on;
 use mint::{Vector2, Vector3, Vector4};
@@ -38,7 +39,7 @@ macro_rules! roundtrip_through_glsl {
             $($key: $value,)+
         };
 
-        let struct_definition = <$ty as AsStd140>::Std140Type::glsl_definition();
+        let struct_definition = <$ty as GlslStruct>::glsl_definition();
 
         let shader = BASE_SHADER
             .replace("{struct_definition}", &struct_definition)
@@ -59,7 +60,7 @@ macro_rules! roundtrip_through_glsl {
 
 #[test]
 fn vec2() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         two: Vector2<f32>,
     }
@@ -74,7 +75,7 @@ fn vec2() {
 
 #[test]
 fn double_vec4() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         one: Vector4<f32>,
         two: Vector4<f32>,
@@ -91,7 +92,7 @@ fn double_vec4() {
 
 #[test]
 fn double_vec3() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         one: Vector3<f32>,
         two: Vector3<f32>,
