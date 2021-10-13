@@ -97,13 +97,13 @@ impl<T> AsStd430 for T
 where
     T: Std430,
 {
-    type Std430Type = Self;
+    default type Std430Type = Self;
 
-    fn as_std430(&self) -> Self {
+    default fn as_std430(&self) -> Self::Std430Type {
         *self
     }
 
-    fn from_std430(value: Self) -> Self {
+    default fn from_std430(value: Self::Std430Type) -> Self {
         value
     }
 }

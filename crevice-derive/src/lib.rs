@@ -2,7 +2,7 @@ use proc_macro::TokenStream as CompilerTokenStream;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, Ident, Path};
+use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, Ident, Path, Type};
 
 #[proc_macro_derive(AsStd140)]
 pub fn derive_as_std140(input: CompilerTokenStream) -> CompilerTokenStream {
@@ -84,6 +84,7 @@ impl EmitOptions {
         let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
         let from_trait_method = &self.from_trait_method;
+        let into_mint_path = quote!(::crevice::internal::mint::IntoMint);
 
         let visibility = input.vis;
 
@@ -102,6 +103,18 @@ impl EmitOptions {
             Data::Enum(_) | Data::Union(_) => panic!("Only structs are supported"),
         };
 
+        let as_trait_ty = |ty: &Type| {
+            quote! {
+                <<#ty as #into_mint_path>::MintType as #as_trait_path>::#as_trait_assoc
+            }
+        };
+
+        let trait_ty = |ty: &Type| {
+            quote! {
+                <<<#ty as #into_mint_path>::MintType as #as_trait_path>::#as_trait_assoc as #trait_path>
+            }
+        };
+
         // Generate the names we'll use for calculating alignment of each field.
         // Each name will turn into a const fn that's invoked to compute the
         // size of a padding array before each field.
@@ -115,60 +128,57 @@ impl EmitOptions {
         // padding. Each function invokes all previous functions to calculate
         // the total offset into the struct for the current field, then aligns
         // up to the nearest multiple of alignment.
-        let alignment_calculators: Vec<_> = fields
-            .named
-            .iter()
-            .enumerate()
-            .map(|(index, field)| {
-                let align_name = &align_names[index];
+        let alignment_calculators: Vec<_> =
+            fields
+                .named
+                .iter()
+                .enumerate()
+                .map(|(index, field)| {
+                    let align_name = &align_names[index];
 
-                let offset_accumulation =
-                    fields
-                        .named
-                        .iter()
-                        .zip(&align_names)
-                        .take(index)
-                        .map(|(field, align_name)| {
-                            let field_ty = &field.ty;
-                            quote! {
-                                offset += #align_name();
-                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
-                            }
-                        });
+                    let offset_accumulation =
+                        fields.named.iter().zip(&align_names).take(index).map(
+                            |(field, align_name)| {
+                                let field_as_ty = as_trait_ty(&field.ty);
 
-                let pad_at_end = index
-                    .checked_sub(1)
-                    .map_or(quote!{0usize}, |prev_index|{
+                                quote! {
+                                    offset += #align_name();
+                                    offset += ::core::mem::size_of::<#field_as_ty>();
+                                }
+                            },
+                        );
+
+                    let pad_at_end = index.checked_sub(1).map_or(quote! {0usize}, |prev_index| {
                         let field = &fields.named[prev_index];
-                        let field_ty = &field.ty;
+                        let field_trait_ty = trait_ty(&field.ty);
+
                         quote! {
-                            if <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END {
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
-                            }
-                            else {
+                            if #field_trait_ty::PAD_AT_END {
+                                #field_trait_ty::ALIGNMENT
+                            } else {
                                 0usize
                             }
                         }
                     });
 
-                let field_ty = &field.ty;
+                    let field_trait_ty = trait_ty(&field.ty);
 
-                quote! {
-                    pub const fn #align_name() -> usize {
-                        let mut offset = 0;
-                        #( #offset_accumulation )*
+                    quote! {
+                        pub const fn #align_name() -> usize {
+                            let mut offset = 0;
+                            #( #offset_accumulation )*
 
-                        ::crevice::internal::align_offset(
-                            offset,
-                            ::crevice::internal::max(
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
-                                #pad_at_end
+                            ::crevice::internal::align_offset(
+                                offset,
+                                ::crevice::internal::max(
+                                    #field_trait_ty::ALIGNMENT,
+                                    #pad_at_end
+                                )
                             )
-                        )
+                        }
                     }
-                }
-            })
-            .collect();
+                })
+                .collect();
 
         // Generate the struct fields that will be present in the generated
         // struct. Each field in the original struct turns into two fields in
@@ -181,12 +191,12 @@ impl EmitOptions {
             .iter()
             .zip(&align_names)
             .map(|(field, align_name)| {
-                let field_ty = &field.ty;
+                let field_as_ty = as_trait_ty(&field.ty);
                 let field_name = field.ident.as_ref().unwrap();
 
                 quote! {
                     #align_name: [u8; #alignment_mod_name::#align_name()],
-                    #field_name: <#field_ty as #as_trait_path>::#as_trait_assoc,
+                    #field_name: #field_as_ty,
                 }
             })
             .collect();
@@ -222,19 +232,17 @@ impl EmitOptions {
         // ...we should generate an expression like this:
         //
         // max(ty2_align, max(ty1_align, min_align))
-        let struct_alignment = fields.named.iter().fold(
-            quote!(#min_struct_alignment),
-            |last, field| {
-                let field_ty = &field.ty;
+        let struct_alignment =
+            fields
+                .named
+                .iter()
+                .fold(quote!(#min_struct_alignment), |last, field| {
+                    let field_trait_ty = trait_ty(&field.ty);
 
-                quote! {
-                    ::crevice::internal::max(
-                        <<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::ALIGNMENT,
-                        #last,
-                    )
-                }
-            },
-        );
+                    quote! {
+                        ::crevice::internal::max(#field_trait_ty::ALIGNMENT, #last)
+                    }
+                });
 
         // For testing purposes, we can optionally generate type layout
         // information using the type-layout crate.

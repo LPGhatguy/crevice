@@ -2,6 +2,7 @@
 //! guarantees are made about its contents.
 
 pub use bytemuck;
+pub use mint;
 
 /// Align the given struct offset up to the given alignment.
 pub const fn align_offset(offset: usize, alignment: usize) -> usize {
