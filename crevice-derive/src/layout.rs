@@ -75,7 +75,6 @@ impl EmitOptions {
 
         let name = input.ident;
         let generated_name = format_ident!("{}{}", layout_name, name);
-        let alignment_mod_name = format_ident!("{}{}Alignment", layout_name, name);
 
         let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
@@ -94,7 +93,14 @@ impl EmitOptions {
         let align_names: Vec<_> = fields
             .named
             .iter()
-            .map(|field| format_ident!("_{}_align", field.ident.as_ref().unwrap()))
+            .map(|field| {
+                format_ident!(
+                    "_{}__{}__{}__align",
+                    name,
+                    field.ident.as_ref().unwrap(),
+                    layout_name
+                )
+            })
             .collect();
 
         // Generate one function per field that is used to apply alignment
@@ -140,6 +146,7 @@ impl EmitOptions {
                 let field_ty = &field.ty;
 
                 quote! {
+                    #[allow(non_snake_case)]
                     pub const fn #align_name() -> usize {
                         let mut offset = 0;
                         #( #offset_accumulation )*
@@ -171,7 +178,7 @@ impl EmitOptions {
                 let field_name = field.ident.as_ref().unwrap();
 
                 quote! {
-                    #align_name: [u8; #alignment_mod_name::#align_name()],
+                    #align_name: [u8; #align_name()],
                     #field_name: <#field_ty as #as_trait_path>::#as_trait_assoc,
                 }
             })
@@ -231,16 +238,12 @@ impl EmitOptions {
         };
 
         quote! {
-            #[allow(non_snake_case)]
-            mod #alignment_mod_name {
-                use super::*;
-
-                #( #alignment_calculators )*
-            }
+            #( #alignment_calculators )*
 
             #[derive(Debug, Clone, Copy)]
             #type_layout_derive
             #[repr(C)]
+            #[allow(non_snake_case)]
             #visibility struct #generated_name #ty_generics #where_clause {
                 #( #generated_fields )*
             }

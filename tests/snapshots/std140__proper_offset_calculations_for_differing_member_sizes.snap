@@ -8,16 +8,16 @@ size: 36
 alignment: 4
 fields:
   - Field:
-      name: _leading_align
-      ty: "[u8 ; Std140ProperlyChecksForUnderlyingTypeSizeAlignment :: _leading_align()]"
+      name: _ProperlyChecksForUnderlyingTypeSize__leading__Std140__align
+      ty: "[u8 ; _ProperlyChecksForUnderlyingTypeSize__leading__Std140__align()]"
       size: 0
   - Field:
       name: leading
       ty: "< BaseSizeAndStdSizeAreDifferent as :: crevice :: std140 :: AsStd140 > ::\nStd140Type"
       size: 20
   - Field:
-      name: _trailing_align
-      ty: "[u8 ; Std140ProperlyChecksForUnderlyingTypeSizeAlignment :: _trailing_align()]"
+      name: _ProperlyChecksForUnderlyingTypeSize__trailing__Std140__align
+      ty: "[u8 ; _ProperlyChecksForUnderlyingTypeSize__trailing__Std140__align()]"
       size: 12
   - Field:
       name: trailing

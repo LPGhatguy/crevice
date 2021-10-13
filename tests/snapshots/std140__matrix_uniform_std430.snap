@@ -8,16 +8,16 @@ size: 52
 alignment: 4
 fields:
   - Field:
-      name: _e_align
-      ty: "[u8 ; Std430MatrixUniformAlignment :: _e_align()]"
+      name: _MatrixUniform__e__Std430__align
+      ty: "[u8 ; _MatrixUniform__e__Std430__align()]"
       size: 0
   - Field:
       name: e
       ty: "< mint :: ColumnMatrix3 < f32 > as :: crevice :: std430 :: AsStd430 > ::\nStd430Type"
       size: 36
   - Field:
-      name: _f_align
-      ty: "[u8 ; Std430MatrixUniformAlignment :: _f_align()]"
+      name: _MatrixUniform__f__Std430__align
+      ty: "[u8 ; _MatrixUniform__f__Std430__align()]"
       size: 12
   - Field:
       name: f

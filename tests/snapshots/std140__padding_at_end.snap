@@ -8,16 +8,16 @@ size: 20
 alignment: 4
 fields:
   - Field:
-      name: _base_value_align
-      ty: "[u8 ; Std140PaddingAtEndAlignment :: _base_value_align()]"
+      name: _PaddingAtEnd__base_value__Std140__align
+      ty: "[u8 ; _PaddingAtEnd__base_value__Std140__align()]"
       size: 0
   - Field:
       name: base_value
       ty: "< PrimitiveF32 as :: crevice :: std140 :: AsStd140 > :: Std140Type"
       size: 8
   - Field:
-      name: _small_field_align
-      ty: "[u8 ; Std140PaddingAtEndAlignment :: _small_field_align()]"
+      name: _PaddingAtEnd__small_field__Std140__align
+      ty: "[u8 ; _PaddingAtEnd__small_field__Std140__align()]"
       size: 8
   - Field:
       name: small_field
