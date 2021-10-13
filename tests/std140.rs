@@ -1,6 +1,7 @@
 use insta::assert_yaml_snapshot;
 use type_layout::TypeLayout;
 
+use crevice::glsl::GlslStruct;
 use crevice::std140::{AsStd140, DVec4, Std140, Vec3};
 use crevice::std430::AsStd430;
 
@@ -140,7 +141,7 @@ struct MatrixUniform {
 
 #[test]
 fn matrix_uniform_std140() {
-    assert_yaml_snapshot!(<<MatrixUniform as AsStd140>::Std140Type as TypeLayout>::type_layout())
+    assert_yaml_snapshot!(<<MatrixUniform as AsStd140>::Std140Type as TypeLayout>::type_layout());
 }
 
 #[test]
@@ -214,4 +215,15 @@ fn there_and_back_again() {
     };
     let x_as = x.as_std140();
     assert_eq!(<ThereAndBackAgain as AsStd140>::from_std140(x_as), x);
+}
+
+#[test]
+fn generate_struct_glsl() {
+    #[derive(GlslStruct)]
+    struct TestGlsl {
+        foo: mint::Vector3<f32>,
+        bar: mint::ColumnMatrix2<f32>,
+    }
+
+    insta::assert_display_snapshot!(TestGlsl::glsl_definition());
 }

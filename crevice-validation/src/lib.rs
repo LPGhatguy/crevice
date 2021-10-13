@@ -2,6 +2,7 @@
 
 use std::borrow::Cow;
 
+use crevice::glsl::GlslStruct;
 use crevice::std140::{AsStd140, Std140};
 use futures::executor::block_on;
 use mint::{Vector2, Vector3, Vector4};
@@ -10,9 +11,7 @@ use wgpu::util::DeviceExt;
 const BASE_SHADER: &str = "
 #version 450
 
-struct TestData {
-    {fields}
-};
+{struct_definition}
 
 layout({layout}, set = 0, binding = 0) readonly buffer INPUT {
     TestData in_data;
@@ -28,11 +27,6 @@ void main() {
 
 macro_rules! roundtrip_through_glsl {
     ($layout:ident
-        glsl {
-            $(
-                $glsl_ty:ident $glsl_name:ident;
-            )+
-        }
         $ty:ident {
             $(
                 $key:ident : $value:expr,
@@ -45,11 +39,10 @@ macro_rules! roundtrip_through_glsl {
             $($key: $value,)+
         };
 
-        let mut fields = String::new();
-        $(fields.push_str(stringify!($glsl_ty $glsl_name;));)+
+        let struct_definition = <$ty as GlslStruct>::glsl_definition();
 
         let shader = BASE_SHADER
-            .replace("{fields}", &fields)
+            .replace("{struct_definition}", &struct_definition)
             .replace("{layout}", stringify!($layout));
 
         let output = round_trip(
@@ -67,16 +60,13 @@ macro_rules! roundtrip_through_glsl {
 
 #[test]
 fn vec2() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         two: Vector2<f32>,
     }
 
     roundtrip_through_glsl! {
         std140
-        glsl {
-            vec2 two;
-        }
         TestData {
             two: Vector2 { x: 1.0, y: 2.0 },
         }
@@ -85,7 +75,7 @@ fn vec2() {
 
 #[test]
 fn double_vec4() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         one: Vector4<f32>,
         two: Vector4<f32>,
@@ -93,10 +83,6 @@ fn double_vec4() {
 
     roundtrip_through_glsl! {
         std140
-        glsl {
-            vec4 one;
-            vec4 two;
-        }
         TestData {
             one: Vector4 { x: 1.0, y: 2.0, z: 3.0, w: 4.0 },
             two: Vector4 { x: 5.0, y: 6.0, z: 7.0, w: 8.0 },
@@ -106,7 +92,7 @@ fn double_vec4() {
 
 #[test]
 fn double_vec3() {
-    #[derive(AsStd140)]
+    #[derive(AsStd140, GlslStruct)]
     struct TestData {
         one: Vector3<f32>,
         two: Vector3<f32>,
@@ -114,10 +100,6 @@ fn double_vec3() {
 
     roundtrip_through_glsl! {
         std140
-        glsl {
-            vec3 one;
-            vec3 two;
-        }
         TestData {
             one: Vector3 { x: 1.0, y: 2.0, z: 3.0 },
             two: Vector3 { x: 4.0, y: 5.0, z: 6.0 },
