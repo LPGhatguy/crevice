@@ -1,9 +1,0 @@
----
-source: tests/std140.rs
-expression: "<MatrixUniform as AsStd140>::Std140Type::glsl_definition()"
-
----
-struct MatrixUniform {
-	mat3 e;
-	float f;
-};
