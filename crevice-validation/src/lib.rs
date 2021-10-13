@@ -87,6 +87,22 @@ fn double_vec3() {
     assert_eq!(round_trip(&input), input);
 }
 
+#[test]
+fn mat3_padding() {
+    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    struct TestData {
+        one: mint::ColumnMatrix3<f32>,
+        two: f32,
+    }
+
+    let input = TestData {
+        one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
+        two: 10.0,
+    };
+
+    assert_eq!(round_trip(&input), input);
+}
+
 fn setup() -> (wgpu::Device, wgpu::Queue) {
     let instance = wgpu::Instance::new(wgpu::Backends::all());
     let adapter =
