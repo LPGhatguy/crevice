@@ -25,86 +25,66 @@ void main() {
     out_data = in_data;
 }";
 
-macro_rules! roundtrip_through_glsl {
-    ($layout:ident
-        $ty:ident {
-            $(
-                $key:ident : $value:expr,
-            )+
-        }
-    ) => {
-        let (device, queue) = setup();
-
-        let input = $ty {
-            $($key: $value,)+
-        };
-
-        let struct_definition = <$ty as GlslStruct>::glsl_definition();
-
-        let shader = BASE_SHADER
-            .replace("{struct_definition}", &struct_definition)
-            .replace("{layout}", stringify!($layout));
-
-        let output = round_trip(
-            &device,
-            &queue,
-            &shader,
-            &input,
-        );
-
-        let expected = input.as_std140();
-
-        $(assert_eq!(output.$key, expected.$key);)+
-    }
-}
-
 #[test]
 fn vec2() {
-    #[derive(AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
     struct TestData {
         two: Vector2<f32>,
     }
 
-    roundtrip_through_glsl! {
-        std140
-        TestData {
-            two: Vector2 { x: 1.0, y: 2.0 },
-        }
-    }
+    let input = TestData {
+        two: [1.0, 2.0].into(),
+    };
+
+    assert_eq!(round_trip(&input), input);
 }
 
 #[test]
 fn double_vec4() {
-    #[derive(AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
     struct TestData {
         one: Vector4<f32>,
         two: Vector4<f32>,
     }
 
-    roundtrip_through_glsl! {
-        std140
-        TestData {
-            one: Vector4 { x: 1.0, y: 2.0, z: 3.0, w: 4.0 },
-            two: Vector4 { x: 5.0, y: 6.0, z: 7.0, w: 8.0 },
-        }
+    let input = TestData {
+        one: [1.0, 2.0, 3.0, 4.0].into(),
+        two: [5.0, 6.0, 7.0, 8.0].into(),
+    };
+
+    assert_eq!(round_trip(&input), input);
+}
+
+#[test]
+fn vec3_then_f32() {
+    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    struct TestData {
+        one: Vector3<f32>,
+        two: f32,
     }
+
+    let input = TestData {
+        one: [1.0, 2.0, 3.0].into(),
+        two: 4.0,
+    };
+
+    assert_eq!(round_trip(&input), input);
 }
 
 #[test]
 fn double_vec3() {
-    #[derive(AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
     struct TestData {
         one: Vector3<f32>,
         two: Vector3<f32>,
     }
 
-    roundtrip_through_glsl! {
-        std140
-        TestData {
-            one: Vector3 { x: 1.0, y: 2.0, z: 3.0 },
-            two: Vector3 { x: 4.0, y: 5.0, z: 6.0 },
-        }
-    }
+    let input = TestData {
+        one: [1.0, 2.0, 3.0].into(),
+        two: [4.0, 5.0, 6.0].into(),
+    };
+
+    assert_eq!(round_trip(&input), input);
 }
 
 fn setup() -> (wgpu::Device, wgpu::Queue) {
@@ -123,13 +103,14 @@ fn setup() -> (wgpu::Device, wgpu::Queue) {
     .unwrap()
 }
 
-fn round_trip<T: AsStd140>(
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-    glsl_shader: &str,
-    value: &T,
-) -> <T as AsStd140>::Std140Type {
-    let shader = match compile(glsl_shader) {
+fn round_trip<T: AsStd140 + GlslStruct>(value: &T) -> T {
+    let (device, queue) = setup();
+
+    let glsl_shader = BASE_SHADER
+        .replace("{struct_definition}", &T::glsl_definition())
+        .replace("{layout}", "std140");
+
+    let shader = match compile(&glsl_shader) {
         Ok(shader) => shader,
         Err(err) => {
             eprintln!("Bad shader: {}", glsl_shader);
@@ -222,7 +203,7 @@ fn round_trip<T: AsStd140>(
     drop(output);
     output_cpu_buffer.unmap();
 
-    result
+    T::from_std140(result)
 }
 
 fn compile(glsl_source: &str) -> anyhow::Result<String> {
