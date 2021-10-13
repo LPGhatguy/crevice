@@ -29,6 +29,7 @@ mint = "0.5.5"
 
 [dev-dependencies]
 cgmath = { version = "0.17.0", features = ["mint"] }
-insta = "0.16.1"
-type-layout = { version = "0.2.0", features = ["serde1"] }
 crevice-derive = { version = "0.7.1", path = "crevice-derive", features = ["test_type_layout"] }
+insta = "0.16.1"
+memoffset = "0.6.4"
+type-layout = { version = "0.2.0", features = ["serde1"] }
