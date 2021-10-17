@@ -1,278 +1,281 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{parse_quote, Data, DeriveInput, Fields, Ident, Path};
+use syn::{parse_quote, Data, DeriveInput, Fields, Ident, Path, Type};
 
-pub struct EmitOptions {
-    /// The Rust-friendly name of the layout, like Std140.
-    pub layout_name: Ident,
+pub fn emit(
+    input: DeriveInput,
+    trait_name: &'static str,
+    mod_name: &'static str,
+    min_struct_alignment: usize,
+) -> TokenStream {
+    let mod_name = Ident::new(mod_name, Span::call_site());
+    let trait_name = Ident::new(trait_name, Span::call_site());
 
-    /// The minimum alignment for a struct in this layout.
-    pub min_struct_alignment: usize,
+    let mod_path: Path = parse_quote!(::crevice::#mod_name);
+    let trait_path: Path = parse_quote!(#mod_path::#trait_name);
 
-    /// The fully-qualified path to the Crevice module containing everything for
-    /// this layout.
-    pub mod_path: Path,
+    let as_trait_name = format_ident!("As{}", trait_name);
+    let as_trait_path: Path = parse_quote!(#mod_path::#as_trait_name);
+    let as_trait_method = format_ident!("as_{}", mod_name);
+    let from_trait_method = format_ident!("from_{}", mod_name);
 
-    /// The fully-qualified path to the trait defining a type in this layout.
-    pub trait_path: Path,
+    let visibility = input.vis;
+    let input_name = input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
-    /// The fully-qualified path to the trait implemented for types that can be
-    /// converted into this layout, like AsStd140.
-    pub as_trait_path: Path,
+    let generated_name = format_ident!("{}{}", trait_name, input_name);
 
-    /// The name of the associated type contained in AsTrait.
-    pub as_trait_assoc: Ident,
+    // Crevice's derive only works on regular structs. We could potentially
+    // support transparent tuple structs in the future.
+    let fields: Vec<_> = match &input.data {
+        Data::Struct(data) => match &data.fields {
+            Fields::Named(fields) => fields.named.iter().collect(),
+            Fields::Unnamed(_) => panic!("Tuple structs are not supported"),
+            Fields::Unit => panic!("Unit structs are not supported"),
+        },
+        Data::Enum(_) | Data::Union(_) => panic!("Only structs are supported"),
+    };
 
-    /// The name of the method used to convert from AsTrait to Trait.
-    pub as_trait_method: Ident,
-
-    // The name of the method used to convert from Trait to AsTrait.
-    pub from_trait_method: Ident,
-}
-
-impl EmitOptions {
-    pub fn new(
-        layout_name: &'static str,
-        mod_name: &'static str,
-        min_struct_alignment: usize,
-    ) -> Self {
-        let mod_name = Ident::new(mod_name, Span::call_site());
-        let layout_name = Ident::new(layout_name, Span::call_site());
-
-        let mod_path = parse_quote!(::crevice::#mod_name);
-        let trait_path = parse_quote!(#mod_path::#layout_name);
-
-        let as_trait_name = format_ident!("As{}", layout_name);
-        let as_trait_path = parse_quote!(#mod_path::#as_trait_name);
-        let as_trait_assoc = format_ident!("{}Type", layout_name);
-        let as_trait_method = format_ident!("as_{}", mod_name);
-        let from_trait_method = format_ident!("from_{}", mod_name);
-
-        Self {
-            layout_name,
-            min_struct_alignment,
-
-            mod_path,
-            trait_path,
-            as_trait_path,
-            as_trait_assoc,
-            as_trait_method,
-            from_trait_method,
+    // Gives the layout-specific version of the given type.
+    let layout_version_of_ty = |ty: &Type| {
+        quote! {
+            <#ty as #as_trait_path>::Output
         }
-    }
+    };
 
-    pub fn emit(&self, input: DeriveInput) -> TokenStream {
-        let min_struct_alignment = self.min_struct_alignment;
-        let layout_name = &self.layout_name;
-        let mod_path = &self.mod_path;
-        let trait_path = &self.trait_path;
-        let as_trait_path = &self.as_trait_path;
-        let as_trait_assoc = &self.as_trait_assoc;
-        let as_trait_method = &self.as_trait_method;
-        let from_trait_method = &self.from_trait_method;
+    // Gives an expression returning the layout-specific alignment for the type.
+    let layout_alignment_of_ty = |ty: &Type| {
+        quote! {
+            <<#ty as #as_trait_path>::Output as #trait_path>::ALIGNMENT
+        }
+    };
 
-        let visibility = input.vis;
+    // Gives an expression telling whether the type should have trailing padding
+    // at least equal to its alignment.
+    let layout_pad_at_end_of_ty = |ty: &Type| {
+        quote! {
+            <<#ty as #as_trait_path>::Output as #trait_path>::PAD_AT_END
+        }
+    };
 
-        let name = input.ident;
-        let generated_name = format_ident!("{}{}", layout_name, name);
+    let field_alignments = fields.iter().map(|field| layout_alignment_of_ty(&field.ty));
+    let struct_alignment = quote! {
+        ::crevice::internal::max_arr([
+            #min_struct_alignment,
+            #(#field_alignments,)*
+        ])
+    };
 
-        let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    // Generate names for each padding calculation function.
+    let pad_fns: Vec<_> = (0..fields.len())
+        .map(|index| format_ident!("_{}__{}Pad{}", input_name, trait_name, index))
+        .collect();
 
-        let fields = match &input.data {
-            Data::Struct(data) => match &data.fields {
-                Fields::Named(fields) => fields,
-                Fields::Unnamed(_) => panic!("Tuple structs are not supported"),
-                Fields::Unit => panic!("Unit structs are not supported"),
-            },
-            Data::Enum(_) | Data::Union(_) => panic!("Only structs are supported"),
-        };
+    // Computes the offset immediately AFTER the field with the given index.
+    //
+    // This function depends on the generated padding calculation functions to
+    // do correct alignment. Be careful not to cause recursion!
+    let offset_after_field = |target: usize| {
+        let mut output = vec![quote!(0usize)];
 
-        // Generate the names we'll use for calculating alignment of each field.
-        // Each name will turn into a const fn that's invoked to compute the
-        // size of a padding array before each field.
-        let align_names: Vec<_> = fields
-            .named
+        for index in 0..=target {
+            let field_ty = &fields[index].ty;
+            let layout_ty = layout_version_of_ty(field_ty);
+
+            output.push(quote! {
+                + ::core::mem::size_of::<#layout_ty>()
+            });
+
+            // For every field except our target field, also add the generated
+            // padding. Padding occurs after each field, so it isn't included in
+            // this value.
+            if index < target {
+                let pad_fn = &pad_fns[index];
+                output.push(quote! {
+                    + #pad_fn()
+                });
+            }
+        }
+
+        output.into_iter().collect::<TokenStream>()
+    };
+
+    let pad_fn_impls: TokenStream = fields
+        .iter()
+        .enumerate()
+        .map(|(index, prev_field)| {
+            let pad_fn = &pad_fns[index];
+
+            let starting_offset = offset_after_field(index);
+            let prev_field_has_end_padding = layout_pad_at_end_of_ty(&prev_field.ty);
+            let prev_field_alignment = layout_alignment_of_ty(&prev_field.ty);
+
+            let next_field_or_self_alignment = fields
+                .get(index + 1)
+                .map(|next_field| layout_alignment_of_ty(&next_field.ty))
+                .unwrap_or(quote!(#struct_alignment));
+
+            quote! {
+                /// Tells how many bytes of padding have to be inserted after
+                /// the field with index #index.
+                #[allow(non_snake_case)]
+                const fn #pad_fn() -> usize {
+                    // First up, calculate our offset into the struct so far.
+                    // We'll use this value to figure out how far out of
+                    // alignment we are.
+                    let starting_offset = #starting_offset;
+
+                    // If the previous field is a struct or array, we must align
+                    // the next field to at least THAT field's alignment.
+                    let min_alignment = if #prev_field_has_end_padding {
+                        #prev_field_alignment
+                    } else {
+                        0
+                    };
+
+                    // We set our target alignment to the larger of the
+                    // alignment due to the previous field and the alignment
+                    // requirement of the next field.
+                    let alignment = ::crevice::internal::max(
+                        #next_field_or_self_alignment,
+                        min_alignment,
+                    );
+
+                    // Using everything we've got, compute our padding amount.
+                    ::crevice::internal::align_offset(starting_offset, alignment)
+                }
+            }
+        })
+        .collect();
+
+    let generated_struct_fields: TokenStream = fields
+        .iter()
+        .enumerate()
+        .map(|(index, field)| {
+            let field_name = field.ident.as_ref().unwrap();
+            let field_ty = layout_version_of_ty(&field.ty);
+            let pad_field_name = format_ident!("_pad{}", index);
+            let pad_fn = &pad_fns[index];
+
+            quote! {
+                #field_name: #field_ty,
+                #pad_field_name: [u8; #pad_fn()],
+            }
+        })
+        .collect();
+
+    let generated_struct_field_init: TokenStream = fields
+        .iter()
+        .map(|field| {
+            let field_name = field.ident.as_ref().unwrap();
+
+            quote! {
+                #field_name: self.#field_name.#as_trait_method(),
+            }
+        })
+        .collect();
+
+    let input_struct_field_init: TokenStream = fields
+        .iter()
+        .map(|field| {
+            let field_name = field.ident.as_ref().unwrap();
+
+            quote! {
+                #field_name: #as_trait_path::#from_trait_method(input.#field_name),
+            }
+        })
+        .collect();
+
+    let struct_definition = quote! {
+        #[derive(Debug, Clone, Copy)]
+        #[repr(C)]
+        #[allow(non_snake_case)]
+        #visibility struct #generated_name #ty_generics #where_clause {
+            #generated_struct_fields
+        }
+    };
+
+    let debug_methods = if cfg!(feature = "debug-methods") {
+        let debug_fields: TokenStream = fields
             .iter()
             .map(|field| {
-                format_ident!(
-                    "_{}__{}__{}__align",
-                    name,
-                    field.ident.as_ref().unwrap(),
-                    layout_name
-                )
-            })
-            .collect();
+                let field_name = field.ident.as_ref().unwrap();
+                let field_ty = &field.ty;
 
-        // Generate one function per field that is used to apply alignment
-        // padding. Each function invokes all previous functions to calculate
-        // the total offset into the struct for the current field, then aligns
-        // up to the nearest multiple of alignment.
-        let alignment_calculators: Vec<_> = fields
-            .named
-            .iter()
-            .enumerate()
-            .map(|(index, field)| {
-                let align_name = &align_names[index];
-
-                let offset_accumulation =
-                    fields
-                        .named
-                        .iter()
-                        .zip(&align_names)
-                        .take(index)
-                        .map(|(field, align_name)| {
-                            let field_ty = &field.ty;
-                            quote! {
-                                offset += #align_name();
-                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
-                            }
-                        });
-
-                let pad_at_end = index
-                    .checked_sub(1)
-                    .map_or(quote!{0usize}, |prev_index|{
-                        let field = &fields.named[prev_index];
-                        let field_ty = &field.ty;
-                        quote! {
-                            if <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END {
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
-                            }
-                            else {
-                                0usize
-                            }
-                        }
+                quote! {
+                    fields.push(Field {
+                        name: stringify!(#field_name),
+                        size: ::core::mem::size_of::<#field_ty>(),
+                        offset: (&zeroed.#field_name as *const _ as usize)
+                            - (&zeroed as *const _ as usize),
                     });
-
-                let field_ty = &field.ty;
-
-                quote! {
-                    #[allow(non_snake_case)]
-                    pub const fn #align_name() -> usize {
-                        let mut offset = 0;
-                        #( #offset_accumulation )*
-
-                        ::crevice::internal::align_offset(
-                            offset,
-                            ::crevice::internal::max(
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
-                                #pad_at_end
-                            )
-                        )
-                    }
                 }
             })
             .collect();
-
-        // Generate the struct fields that will be present in the generated
-        // struct. Each field in the original struct turns into two fields in
-        // the generated struct:
-        //
-        // * Alignment, a byte array whose size is computed from #align_name().
-        // * Data, the layout-specific version of the original field.
-        let generated_fields: Vec<_> = fields
-            .named
-            .iter()
-            .zip(&align_names)
-            .map(|(field, align_name)| {
-                let field_ty = &field.ty;
-                let field_name = field.ident.as_ref().unwrap();
-
-                quote! {
-                    #align_name: [u8; #align_name()],
-                    #field_name: <#field_ty as #as_trait_path>::#as_trait_assoc,
-                }
-            })
-            .collect();
-
-        // Generate an initializer for each field in the original struct.
-        // Alignment fields are filled in with zeroes using struct update
-        // syntax.
-        let field_initializers: Vec<_> = fields
-            .named
-            .iter()
-            .map(|field| {
-                let field_name = field.ident.as_ref().unwrap();
-
-                quote!(#field_name: self.#field_name.#as_trait_method())
-            })
-            .collect();
-
-        let field_unwrappers: Vec<_> = fields
-            .named
-            .iter()
-            .map(|field|{
-                let field_name = field.ident.as_ref().unwrap();
-                let field_ty = &field.ty;
-                quote!(#field_name: <#field_ty as #as_trait_path>::#from_trait_method(value.#field_name))
-            })
-            .collect();
-
-        // This fold builds up an expression that finds the maximum alignment out of
-        // all of the fields in the struct. For this struct:
-        //
-        // struct Foo { a: ty1, b: ty2 }
-        //
-        // ...we should generate an expression like this:
-        //
-        // max(ty2_align, max(ty1_align, min_align))
-        let struct_alignment = fields.named.iter().fold(
-            quote!(#min_struct_alignment),
-            |last, field| {
-                let field_ty = &field.ty;
-
-                quote! {
-                    ::crevice::internal::max(
-                        <<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::ALIGNMENT,
-                        #last,
-                    )
-                }
-            },
-        );
-
-        // For testing purposes, we can optionally generate type layout
-        // information using the type-layout crate.
-        let type_layout_derive = if cfg!(feature = "test_type_layout") {
-            quote!(#[derive(::type_layout::TypeLayout)])
-        } else {
-            quote!()
-        };
 
         quote! {
-            #( #alignment_calculators )*
+            impl #impl_generics #generated_name #ty_generics #where_clause {
+                fn debug_metrics() -> String {
+                    let size = ::core::mem::size_of::<Self>();
+                    let align = <Self as #trait_path>::ALIGNMENT;
 
-            #[derive(Debug, Clone, Copy)]
-            #type_layout_derive
-            #[repr(C)]
-            #[allow(non_snake_case)]
-            #visibility struct #generated_name #ty_generics #where_clause {
-                #( #generated_fields )*
-            }
+                    let zeroed: Self = ::crevice::internal::bytemuck::Zeroable::zeroed();
 
-            unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
-            unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
-
-            unsafe impl #impl_generics #mod_path::#layout_name for #generated_name #ty_generics #where_clause {
-                const ALIGNMENT: usize = #struct_alignment;
-                const PAD_AT_END: bool = true;
-            }
-
-            impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
-                type #as_trait_assoc = #generated_name;
-
-                fn #as_trait_method(&self) -> Self::#as_trait_assoc {
-                    Self::#as_trait_assoc {
-                        #( #field_initializers, )*
-
-                        ..::crevice::internal::bytemuck::Zeroable::zeroed()
+                    #[derive(Debug)]
+                    struct Field {
+                        name: &'static str,
+                        offset: usize,
+                        size: usize,
                     }
+                    let mut fields = Vec::new();
+
+                    #debug_fields
+
+                    format!("Size {}, Align {}, fields: {:#?}", size, align, fields)
                 }
 
-                fn #from_trait_method(value: Self::#as_trait_assoc) -> Self {
-                    Self {
-                        #( #field_unwrappers, )*
-                    }
+                fn debug_definitions() -> &'static str {
+                    stringify!(
+                        #struct_definition
+                        #pad_fn_impls
+                    )
                 }
             }
         }
+    } else {
+        quote!()
+    };
+
+    quote! {
+        #pad_fn_impls
+        #struct_definition
+
+        unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
+        unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
+
+        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+            const ALIGNMENT: usize = #struct_alignment;
+            const PAD_AT_END: bool = true;
+        }
+
+        impl #impl_generics #as_trait_path for #input_name #ty_generics #where_clause {
+            type Output = #generated_name;
+
+            fn #as_trait_method(&self) -> Self::Output {
+                Self::Output {
+                    #generated_struct_field_init
+
+                    ..::crevice::internal::bytemuck::Zeroable::zeroed()
+                }
+            }
+
+            fn #from_trait_method(input: Self::Output) -> Self {
+                Self {
+                    #input_struct_field_init
+                }
+            }
+        }
+
+        #debug_methods
     }
 }

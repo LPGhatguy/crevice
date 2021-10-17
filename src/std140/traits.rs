@@ -78,26 +78,26 @@ write_to_gpu_buffer(camera_std140.as_bytes());
 */
 pub trait AsStd140 {
     /// The `std140` version of this value.
-    type Std140Type: Std140;
+    type Output: Std140;
 
     /// Convert this value into the `std140` version of itself.
-    fn as_std140(&self) -> Self::Std140Type;
+    fn as_std140(&self) -> Self::Output;
 
     /// Returns the size of the `std140` version of this type. Useful for
     /// pre-sizing buffers.
     fn std140_size_static() -> usize {
-        size_of::<Self::Std140Type>()
+        size_of::<Self::Output>()
     }
 
     /// Converts from `std140` version of self to self.
-    fn from_std140(val: Self::Std140Type) -> Self;
+    fn from_std140(val: Self::Output) -> Self;
 }
 
 impl<T> AsStd140 for T
 where
     T: Std140,
 {
-    type Std140Type = Self;
+    type Output = Self;
 
     fn as_std140(&self) -> Self {
         *self
@@ -144,7 +144,7 @@ where
     }
 
     fn std140_size(&self) -> usize {
-        size_of::<<Self as AsStd140>::Std140Type>()
+        size_of::<<Self as AsStd140>::Output>()
     }
 }
 
