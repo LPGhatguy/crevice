@@ -29,6 +29,7 @@ macro_rules! vectors {
             #[$doc]
             #[allow(missing_docs)]
             #[derive(Debug, Clone, Copy, PartialEq)]
+            #[repr(C)]
             pub struct $name {
                 $(pub $field: $prim,)+
             }
@@ -83,6 +84,7 @@ macro_rules! matrices {
             #[$doc]
             #[allow(missing_docs)]
             #[derive(Debug, Clone, Copy)]
+            #[repr(C)]
             pub struct $name {
                 $(pub $field: $field_ty,)+
             }
