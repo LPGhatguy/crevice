@@ -17,11 +17,12 @@ mod util;
 
 use crevice::glsl::GlslStruct;
 use crevice::std140::AsStd140;
+use crevice::std430::AsStd430;
 use mint::{ColumnMatrix3, ColumnMatrix4, Vector2, Vector3, Vector4};
 
 #[test]
 fn two_f32() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct TwoF32 {
         x: f32,
         y: f32,
@@ -37,7 +38,7 @@ fn two_f32() {
 
 #[test]
 fn vec2() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct UseVec2 {
         one: Vector2<f32>,
     }
@@ -89,7 +90,7 @@ fn mat4_bare() {
 
 #[test]
 fn mat3() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct TestData {
         one: ColumnMatrix3<f32>,
     }
@@ -101,7 +102,7 @@ fn mat3() {
 
 #[test]
 fn dvec4() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct UsingDVec4 {
         doubles: Vector4<f64>,
     }
@@ -120,7 +121,7 @@ fn dvec4() {
 
 #[test]
 fn four_f64() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct FourF64 {
         x: f64,
         y: f64,
@@ -148,7 +149,7 @@ fn four_f64() {
 
 #[test]
 fn two_vec3() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct TwoVec3 {
         one: Vector3<f32>,
         two: Vector3<f32>,
@@ -167,7 +168,7 @@ fn two_vec3() {
 
 #[test]
 fn two_vec4() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct TwoVec4 {
         one: Vector4<f32>,
         two: Vector4<f32>,
@@ -186,7 +187,7 @@ fn two_vec4() {
 
 #[test]
 fn vec3_then_f32() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct Vec3ThenF32 {
         one: Vector3<f32>,
         two: f32,
@@ -205,7 +206,7 @@ fn vec3_then_f32() {
 
 #[test]
 fn mat3_padding() {
-    #[derive(Debug, PartialEq, AsStd140, GlslStruct)]
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct Mat3Padding {
         // Three rows of 16 bytes (3x f32 + 4 bytes padding)
         one: mint::ColumnMatrix3<f32>,

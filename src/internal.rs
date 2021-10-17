@@ -5,7 +5,7 @@ pub use bytemuck;
 
 /// Gives the number of bytes needed to make `offset` be aligned to `alignment`.
 pub const fn align_offset(offset: usize, alignment: usize) -> usize {
-    if offset % alignment == 0 {
+    if alignment == 0 || offset % alignment == 0 {
         0
     } else {
         alignment - offset % alignment
