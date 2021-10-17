@@ -9,6 +9,12 @@ homepage = "https://github.com/LPGhatguy/crevice"
 repository = "https://github.com/LPGhatguy/crevice"
 license = "MIT OR Apache-2.0"
 
+[features]
+default = []
+
+# Enable methods that let you introspect into the generated structs.
+debug-methods = []
+
 [lib]
 proc-macro = true
 

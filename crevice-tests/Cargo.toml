@@ -8,6 +8,7 @@ wgpu-validation = ["wgpu", "naga", "futures"]
 
 [dependencies]
 crevice = { path = ".." }
+crevice-derive = { path = "../crevice-derive", features = ["debug-methods"] }
 
 anyhow = "1.0.44"
 bytemuck = "1.7.2"

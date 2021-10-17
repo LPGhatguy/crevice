@@ -1,4 +1,20 @@
 #[macro_export]
+macro_rules! print_type {
+    ($type:ty) => {
+        println!(
+            "{}",
+            <$type as crevice::std140::AsStd140>::Output::debug_metrics()
+        );
+        println!();
+        println!();
+        println!(
+            "{}",
+            <$type as crevice::std140::AsStd140>::Output::debug_definitions()
+        );
+    };
+}
+
+#[macro_export]
 macro_rules! assert_std140_offsets {
     ((size = $size:literal, align = $align:literal) $struct:ident {
         $( $field:ident: $offset:literal, )*
