@@ -42,4 +42,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Run Validation Tests
-      run: cargo test --all --verbose
+      run: cargo test --all --no-fail-fast --verbose
