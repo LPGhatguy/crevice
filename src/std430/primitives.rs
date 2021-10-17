@@ -105,7 +105,7 @@ macro_rules! matrices {
 
 matrices! {
     #[doc = "Corresponds to a GLSL `mat2` in std430 layout."]
-    align(16)
+    align(8)
     mat2 Mat2 {
         x: Vec2,
         y: Vec2,

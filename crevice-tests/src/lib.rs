@@ -18,7 +18,7 @@ mod util;
 use crevice::glsl::GlslStruct;
 use crevice::std140::AsStd140;
 use crevice::std430::AsStd430;
-use mint::{ColumnMatrix3, ColumnMatrix4, Vector2, Vector3, Vector4};
+use mint::{ColumnMatrix2, ColumnMatrix3, ColumnMatrix4, Vector2, Vector3, Vector4};
 
 #[test]
 fn two_f32() {
@@ -58,6 +58,29 @@ fn vec2() {
 }
 
 #[test]
+fn mat2_bare() {
+    type Mat2 = ColumnMatrix2<f32>;
+
+    assert_std140!((size = 32, align = 16) Mat2 {
+        x: 0,
+        y: 16,
+    });
+
+    assert_std430!((size = 16, align = 8) Mat2 {
+        x: 0,
+        y: 8,
+    });
+
+    // Naga doesn't work with std140 mat2 values.
+    // https://github.com/gfx-rs/naga/issues/1400
+
+    // test_round_trip_primitive(Mat2 {
+    //     x: [1.0, 2.0].into(),
+    //     y: [3.0, 4.0].into(),
+    // });
+}
+
+#[test]
 fn mat3_bare() {
     type Mat3 = ColumnMatrix3<f32>;
 
@@ -67,11 +90,14 @@ fn mat3_bare() {
         z: 32,
     });
 
-    test_round_trip_primitive(Mat3 {
-        x: [1.0, 2.0, 3.0].into(),
-        y: [4.0, 5.0, 6.0].into(),
-        z: [7.0, 8.0, 9.0].into(),
-    });
+    // Naga produces invalid HLSL for mat3 value.
+    // https://github.com/gfx-rs/naga/issues/1466
+
+    // test_round_trip_primitive(Mat3 {
+    //     x: [1.0, 2.0, 3.0].into(),
+    //     y: [4.0, 5.0, 6.0].into(),
+    //     z: [7.0, 8.0, 9.0].into(),
+    // });
 }
 
 #[test]
@@ -100,9 +126,12 @@ fn mat3() {
         one: ColumnMatrix3<f32>,
     }
 
-    test_round_trip_struct(TestData {
-        one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
-    });
+    // Naga produces invalid HLSL for mat3 value.
+    // https://github.com/gfx-rs/naga/issues/1466
+
+    // test_round_trip_struct(TestData {
+    //     one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
+    // });
 }
 
 #[test]
@@ -231,10 +260,13 @@ fn mat3_padding() {
         two: 48,
     });
 
-    test_round_trip_struct(Mat3Padding {
-        one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
-        two: 10.0,
-    });
+    // Naga produces invalid HLSL for mat3 value.
+    // https://github.com/gfx-rs/naga/issues/1466
+
+    // test_round_trip_struct(Mat3Padding {
+    //     one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
+    //     two: 10.0,
+    // });
 }
 
 #[test]
