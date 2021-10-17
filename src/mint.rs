@@ -67,9 +67,11 @@ mint_vectors! {
     mint::Vector3<u32>, uvec3, UVec3, (x, y, z),
     mint::Vector4<u32>, uvec4, UVec4, (x, y, z, w),
 
-    mint::Vector2<bool>, bvec2, BVec2, (x, y),
-    mint::Vector3<bool>, bvec3, BVec3, (x, y, z),
-    mint::Vector4<bool>, bvec4, BVec4, (x, y, z, w),
+    // bool vectors are disabled due to https://github.com/LPGhatguy/crevice/issues/36
+
+    // mint::Vector2<bool>, bvec2, BVec2, (x, y),
+    // mint::Vector3<bool>, bvec3, BVec3, (x, y, z),
+    // mint::Vector4<bool>, bvec4, BVec4, (x, y, z, w),
 
     mint::Vector2<f64>, dvec2, DVec2, (x, y),
     mint::Vector3<f64>, dvec3, DVec3, (x, y, z),

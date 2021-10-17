@@ -61,9 +61,11 @@ vectors! {
     #[doc = "Corresponds to a GLSL `uvec3` in std140 layout."] align(16) uvec3 UVec3<u32>(x, y, z)
     #[doc = "Corresponds to a GLSL `uvec4` in std140 layout."] align(16) uvec4 UVec4<u32>(x, y, z, w)
 
-    #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<bool>(x, y)
-    #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<bool>(x, y, z)
-    #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<bool>(x, y, z, w)
+    // bool vectors are disabled due to https://github.com/LPGhatguy/crevice/issues/36
+
+    // #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<bool>(x, y)
+    // #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<bool>(x, y, z)
+    // #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<bool>(x, y, z, w)
 
     #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) dvec2 DVec2<f64>(x, y)
     #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) dvec3 DVec3<f64>(x, y, z)
