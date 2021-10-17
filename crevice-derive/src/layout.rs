@@ -58,6 +58,14 @@ pub fn emit(
         }
     };
 
+    let field_alignments = fields.iter().map(|field| layout_alignment_of_ty(&field.ty));
+    let struct_alignment = quote! {
+        ::crevice::internal::max_arr([
+            #min_struct_alignment,
+            #(#field_alignments,)*
+        ])
+    };
+
     // Generate names for each padding calculation function.
     let pad_fns: Vec<_> = (0..fields.len())
         .map(|index| format_ident!("_{}__{}Pad{}", input_name, trait_name, index))
@@ -105,7 +113,7 @@ pub fn emit(
             let next_field_or_self_alignment = fields
                 .get(index + 1)
                 .map(|next_field| layout_alignment_of_ty(&next_field.ty))
-                .unwrap_or(quote!(#min_struct_alignment));
+                .unwrap_or(quote!(#struct_alignment));
 
             quote! {
                 /// Tells how many bytes of padding have to be inserted after
@@ -177,14 +185,6 @@ pub fn emit(
             }
         })
         .collect();
-
-    let field_alignments = fields.iter().map(|field| layout_alignment_of_ty(&field.ty));
-    let struct_alignment = quote! {
-        ::crevice::internal::max_arr([
-            #min_struct_alignment,
-            #(#field_alignments,)*
-        ])
-    };
 
     let struct_definition = quote! {
         #[derive(Debug, Clone, Copy)]
