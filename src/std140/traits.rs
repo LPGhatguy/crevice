@@ -93,6 +93,22 @@ pub trait AsStd140 {
     fn from_std140(val: Self::Output) -> Self;
 }
 
+impl<T> AsStd140 for T
+where
+    T: mint::IntoMint,
+    T::MintType: AsStd140 + Into<T>,
+{
+    type Output = <T::MintType as AsStd140>::Output;
+
+    fn as_std140(&self) -> Self::Output {
+        self.into_mint().as_std140()
+    }
+
+    fn from_std140(val: Self::Output) -> Self {
+        T::from_std140(val).into()
+    }
+}
+
 /// Trait implemented for all types that can be written into a buffer as
 /// `std140` bytes. This type is more general than [`AsStd140`]: all `AsStd140`
 /// types implement `WriteStd140`, but not the other way around.
