@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crevice::glsl::GlslStruct;
+use crevice::glsl::{Glsl, GlslStruct};
 use crevice::std140::{AsStd140, Std140};
 use futures::executor::block_on;
 use wgpu::util::DeviceExt;
@@ -21,35 +21,62 @@ void main() {
     out_data = in_data;
 }";
 
-pub fn assert_round_trip<T: std::fmt::Debug + PartialEq + AsStd140 + GlslStruct>(value: T) {
-    let output = round_trip(&value);
+pub fn test_round_trip_struct<T: std::fmt::Debug + PartialEq + AsStd140 + GlslStruct>(value: T) {
+    let output = round_trip(wgsl_shader_for_struct::<T>(), &value);
 
     if value != output {
         println!(
-            "Value did not round-trip through wgpu successfully.\n\
+            "Struct did not round-trip through wgpu successfully.\n\
             Input:  {:?}\n\
             Output: {:?}\n\n\
             GLSL shader:\n{}\n\n\
             WGSL shader:\n{}",
             value,
             output,
-            glsl_shader_for::<T>(),
-            wgsl_shader_for::<T>(),
+            glsl_shader_for_struct::<T>(),
+            wgsl_shader_for_struct::<T>(),
         );
 
         panic!("wgpu round-trip failure for {}", T::NAME);
     }
 }
 
-fn glsl_shader_for<T: GlslStruct>() -> String {
+pub fn test_round_trip_primitive<T: std::fmt::Debug + PartialEq + AsStd140 + Glsl>(value: T) {
+    let output = round_trip(wgsl_shader_for_primitive::<T>(), &value);
+
+    if value != output {
+        println!(
+            "Struct did not round-trip through wgpu successfully.\n\
+            Input:  {:?}\n\
+            Output: {:?}\n\n\
+            GLSL shader:\n{}\n\n\
+            WGSL shader:\n{}",
+            value,
+            output,
+            glsl_shader_for_primitive::<T>(),
+            wgsl_shader_for_primitive::<T>(),
+        );
+
+        panic!("wgpu round-trip failure for {}", T::NAME);
+    }
+}
+
+fn glsl_shader_for_struct<T: GlslStruct>() -> String {
     BASE_SHADER
         .replace("{struct_name}", T::NAME)
         .replace("{struct_definition}", &T::glsl_definition())
         .replace("{layout}", "std140")
 }
 
-fn wgsl_shader_for<T: GlslStruct>() -> String {
-    let glsl_shader = glsl_shader_for::<T>();
+fn glsl_shader_for_primitive<T: Glsl>() -> String {
+    BASE_SHADER
+        .replace("{struct_name}", T::NAME)
+        .replace("{struct_definition}", "")
+        .replace("{layout}", "std140")
+}
+
+fn wgsl_shader_for_struct<T: GlslStruct>() -> String {
+    let glsl_shader = glsl_shader_for_struct::<T>();
     match compile(&glsl_shader) {
         Ok(shader) => shader,
         Err(err) => {
@@ -59,10 +86,19 @@ fn wgsl_shader_for<T: GlslStruct>() -> String {
     }
 }
 
-fn round_trip<T: AsStd140 + GlslStruct>(value: &T) -> T {
-    let (device, queue) = setup();
+fn wgsl_shader_for_primitive<T: Glsl>() -> String {
+    let glsl_shader = glsl_shader_for_primitive::<T>();
+    match compile(&glsl_shader) {
+        Ok(shader) => shader,
+        Err(err) => {
+            eprintln!("Bad shader: {}", glsl_shader);
+            panic!("{}", err);
+        }
+    }
+}
 
-    let shader = wgsl_shader_for::<T>();
+fn round_trip<T: AsStd140>(shader: String, value: &T) -> T {
+    let (device, queue) = setup();
 
     let mut data = Vec::new();
     data.extend_from_slice(value.as_std140().as_bytes());
@@ -156,6 +192,8 @@ fn setup() -> (wgpu::Device, wgpu::Queue) {
     let instance = wgpu::Instance::new(wgpu::Backends::all());
     let adapter =
         block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).unwrap();
+
+    println!("Adapter info: {:#?}", adapter.get_info());
 
     block_on(adapter.request_device(
         &wgpu::DeviceDescriptor {

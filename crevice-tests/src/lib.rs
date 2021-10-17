@@ -4,10 +4,13 @@
 mod gpu;
 
 #[cfg(feature = "wgpu-validation")]
-use gpu::assert_round_trip;
+use gpu::{test_round_trip_primitive, test_round_trip_struct};
 
 #[cfg(not(feature = "wgpu-validation"))]
-fn assert_round_trip<T>(_value: T) {}
+fn test_round_trip_struct<T>(_value: T) {}
+
+#[cfg(not(feature = "wgpu-validation"))]
+fn test_round_trip_primitive<T>(_value: T) {}
 
 #[macro_use]
 mod util;
@@ -29,7 +32,7 @@ fn two_f32() {
         y: 4,
     });
 
-    assert_round_trip(TwoF32 { x: 5.0, y: 7.0 });
+    test_round_trip_struct(TwoF32 { x: 5.0, y: 7.0 });
 }
 
 #[test]
@@ -43,8 +46,25 @@ fn vec2() {
         one: 0,
     });
 
-    assert_round_trip(UseVec2 {
+    test_round_trip_struct(UseVec2 {
         one: [1.0, 2.0].into(),
+    });
+}
+
+#[test]
+fn mat3_bare() {
+    type Mat3 = ColumnMatrix3<f32>;
+
+    assert_std140_offsets!((size = 48, align = 16) Mat3 {
+        x: 0,
+        y: 16,
+        z: 32,
+    });
+
+    test_round_trip_primitive(Mat3 {
+        x: [1.0, 2.0, 3.0].into(),
+        y: [4.0, 5.0, 6.0].into(),
+        z: [7.0, 8.0, 9.0].into(),
     });
 }
 
@@ -55,7 +75,7 @@ fn mat3() {
         one: ColumnMatrix3<f32>,
     }
 
-    assert_round_trip(TestData {
+    test_round_trip_struct(TestData {
         one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
     });
 }
@@ -74,7 +94,7 @@ fn dvec4() {
     // Naga does not appear to support doubles.
     // https://github.com/gfx-rs/naga/issues/1272
 
-    // assert_round_trip(UsingDVec4 {
+    // test_round_trip_struct(UsingDVec4 {
     //     doubles: [1.0, 2.0, 3.0, 4.0].into(),
     // });
 }
@@ -99,7 +119,7 @@ fn four_f64() {
     // Naga does not appear to support doubles.
     // https://github.com/gfx-rs/naga/issues/1272
 
-    // assert_round_trip(FourF64 {
+    // test_round_trip_struct(FourF64 {
     //     x: 5.0,
     //     y: 7.0,
     //     z: 9.0,
@@ -120,7 +140,7 @@ fn two_vec3() {
         two: 16,
     });
 
-    assert_round_trip(TwoVec3 {
+    test_round_trip_struct(TwoVec3 {
         one: [1.0, 2.0, 3.0].into(),
         two: [4.0, 5.0, 6.0].into(),
     });
@@ -139,7 +159,7 @@ fn two_vec4() {
         two: 16,
     });
 
-    assert_round_trip(TwoVec4 {
+    test_round_trip_struct(TwoVec4 {
         one: [1.0, 2.0, 3.0, 4.0].into(),
         two: [5.0, 6.0, 7.0, 8.0].into(),
     });
@@ -158,7 +178,7 @@ fn vec3_then_f32() {
         two: 12,
     });
 
-    assert_round_trip(Vec3ThenF32 {
+    test_round_trip_struct(Vec3ThenF32 {
         one: [1.0, 2.0, 3.0].into(),
         two: 4.0,
     });
@@ -178,7 +198,7 @@ fn mat3_padding() {
         two: 48,
     });
 
-    assert_round_trip(Mat3Padding {
+    test_round_trip_struct(Mat3Padding {
         one: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]].into(),
         two: 10.0,
     });
