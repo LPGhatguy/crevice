@@ -1,5 +1,5 @@
 ---
-source: tests/std140.rs
+source: tests/test.rs
 expression: "TestGlsl::glsl_definition()"
 
 ---
