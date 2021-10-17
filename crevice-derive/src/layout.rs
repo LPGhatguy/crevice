@@ -19,6 +19,11 @@ pub fn emit(
     let as_trait_method = format_ident!("as_{}", mod_name);
     let from_trait_method = format_ident!("from_{}", mod_name);
 
+    let also_as_trait_name = format_ident!("AlsoAs{}", trait_name);
+    let also_as_trait_path: Path = parse_quote!(#mod_path::#also_as_trait_name);
+    let also_as_trait_method = format_ident!("also_as_{}", mod_name);
+    let also_from_trait_method = format_ident!("also_from_{}", mod_name);
+
     let visibility = input.vis;
     let input_name = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -38,23 +43,42 @@ pub fn emit(
 
     // Gives the layout-specific version of the given type.
     let layout_version_of_ty = |ty: &Type| {
-        quote! {
-            <#ty as #as_trait_path>::Output
+        // FIXME: Hack so I only have to do this for std140 right now
+        if min_struct_alignment == 16 {
+            quote! {
+                <#ty as #also_as_trait_path>::Output
+            }
+        } else {
+            quote! {
+                <#ty as #as_trait_path>::Output
+            }
         }
     };
 
     // Gives an expression returning the layout-specific alignment for the type.
     let layout_alignment_of_ty = |ty: &Type| {
-        quote! {
-            <<#ty as #as_trait_path>::Output as #trait_path>::ALIGNMENT
+        if min_struct_alignment == 16 {
+            quote! {
+                <<#ty as #also_as_trait_path>::Output as #trait_path>::ALIGNMENT
+            }
+        } else {
+            quote! {
+                <<#ty as #as_trait_path>::Output as #trait_path>::ALIGNMENT
+            }
         }
     };
 
     // Gives an expression telling whether the type should have trailing padding
     // at least equal to its alignment.
     let layout_pad_at_end_of_ty = |ty: &Type| {
-        quote! {
-            <<#ty as #as_trait_path>::Output as #trait_path>::PAD_AT_END
+        if min_struct_alignment == 16 {
+            quote! {
+                <<#ty as #also_as_trait_path>::Output as #trait_path>::PAD_AT_END
+            }
+        } else {
+            quote! {
+                <<#ty as #as_trait_path>::Output as #trait_path>::PAD_AT_END
+            }
         }
     };
 
@@ -169,8 +193,14 @@ pub fn emit(
         .map(|field| {
             let field_name = field.ident.as_ref().unwrap();
 
-            quote! {
-                #field_name: self.#field_name.#as_trait_method(),
+            if min_struct_alignment == 16 {
+                quote! {
+                    #field_name: #also_as_trait_path::#also_as_trait_method(&self.#field_name),
+                }
+            } else {
+                quote! {
+                    #field_name: self.#field_name.#as_trait_method(),
+                }
             }
         })
         .collect();
@@ -180,8 +210,14 @@ pub fn emit(
         .map(|field| {
             let field_name = field.ident.as_ref().unwrap();
 
-            quote! {
-                #field_name: #as_trait_path::#from_trait_method(input.#field_name),
+            if min_struct_alignment == 16 {
+                quote! {
+                    #field_name: #also_as_trait_path::#also_from_trait_method(input.#field_name),
+                }
+            } else {
+                quote! {
+                    #field_name: #as_trait_path::#from_trait_method(input.#field_name),
+                }
             }
         })
         .collect();
@@ -258,6 +294,36 @@ pub fn emit(
 
                 fn from_std140(value: Self) -> Self {
                     value
+                }
+            }
+
+            impl #impl_generics #also_as_trait_path for #generated_name #ty_generics #where_clause {
+                type Output = Self;
+
+                fn also_as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn also_from_std140(value: Self) -> Self {
+                    value
+                }
+            }
+
+            impl #impl_generics #also_as_trait_path for #input_name #ty_generics #where_clause {
+                type Output = #generated_name;
+
+                fn #also_as_trait_method(&self) -> Self::Output {
+                    Self::Output {
+                        #generated_struct_field_init
+
+                        ..::crevice::internal::bytemuck::Zeroable::zeroed()
+                    }
+                }
+
+                fn #also_from_trait_method(input: Self::Output) -> Self {
+                    Self {
+                        #input_struct_field_init
+                    }
                 }
             }
         }

@@ -93,19 +93,26 @@ pub trait AsStd140 {
     fn from_std140(val: Self::Output) -> Self;
 }
 
-impl<T> AsStd140 for T
+#[allow(missing_docs)]
+pub trait AlsoAsStd140 {
+    type Output: Std140;
+    fn also_as_std140(&self) -> Self::Output;
+    fn also_from_std140(val: Self::Output) -> Self;
+}
+
+impl<T> AlsoAsStd140 for T
 where
-    T: mint::IntoMint,
-    T::MintType: AsStd140 + Into<T>,
+    T: mint::IntoMint + Copy,
+    T::MintType: AsStd140 + Into<Self>,
 {
     type Output = <T::MintType as AsStd140>::Output;
 
-    fn as_std140(&self) -> Self::Output {
+    fn also_as_std140(&self) -> Self::Output {
         self.into_mint().as_std140()
     }
 
-    fn from_std140(val: Self::Output) -> Self {
-        T::from_std140(val).into()
+    fn also_from_std140(val: Self::Output) -> Self {
+        T::MintType::from_std140(val).into()
     }
 }
 

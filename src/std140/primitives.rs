@@ -1,7 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 
 use crate::glsl::Glsl;
-use crate::std140::{AsStd140, Std140};
+use crate::std140::{AlsoAsStd140, AsStd140, Std140};
 
 macro_rules! primitives {
     (
@@ -60,6 +60,18 @@ macro_rules! vectors {
                 }
 
                 fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
+
+            impl AlsoAsStd140 for $name {
+                type Output = Self;
+
+                fn also_as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn also_from_std140(value: Self) -> Self {
                     value
                 }
             }
@@ -129,6 +141,18 @@ macro_rules! matrices {
                 }
 
                 fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
+
+            impl AlsoAsStd140 for $name {
+                type Output = Self;
+
+                fn also_as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn also_from_std140(value: Self) -> Self {
                     value
                 }
             }
