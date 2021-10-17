@@ -20,9 +20,6 @@ pub struct EmitOptions {
     /// converted into this layout, like AsStd140.
     pub as_trait_path: Path,
 
-    /// The name of the associated type contained in AsTrait.
-    pub as_trait_assoc: Ident,
-
     /// The name of the method used to convert from AsTrait to Trait.
     pub as_trait_method: Ident,
 
@@ -44,7 +41,6 @@ impl EmitOptions {
 
         let as_trait_name = format_ident!("As{}", layout_name);
         let as_trait_path = parse_quote!(#mod_path::#as_trait_name);
-        let as_trait_assoc = format_ident!("{}Type", layout_name);
         let as_trait_method = format_ident!("as_{}", mod_name);
         let from_trait_method = format_ident!("from_{}", mod_name);
 
@@ -55,7 +51,6 @@ impl EmitOptions {
             mod_path,
             trait_path,
             as_trait_path,
-            as_trait_assoc,
             as_trait_method,
             from_trait_method,
         }
@@ -67,7 +62,6 @@ impl EmitOptions {
         let mod_path = &self.mod_path;
         let trait_path = &self.trait_path;
         let as_trait_path = &self.as_trait_path;
-        let as_trait_assoc = &self.as_trait_assoc;
         let as_trait_method = &self.as_trait_method;
         let from_trait_method = &self.from_trait_method;
 
@@ -124,7 +118,7 @@ impl EmitOptions {
                             let field_ty = &field.ty;
                             quote! {
                                 offset += #align_name();
-                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::#as_trait_assoc>();
+                                offset += ::core::mem::size_of::<<#field_ty as #as_trait_path>::Output>();
                             }
                         });
 
@@ -134,8 +128,8 @@ impl EmitOptions {
                         let field = &fields.named[prev_index];
                         let field_ty = &field.ty;
                         quote! {
-                            if <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::PAD_AT_END {
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT
+                            if <<#field_ty as #as_trait_path>::Output as #mod_path::#layout_name>::PAD_AT_END {
+                                <<#field_ty as #as_trait_path>::Output as #mod_path::#layout_name>::ALIGNMENT
                             }
                             else {
                                 0usize
@@ -154,7 +148,7 @@ impl EmitOptions {
                         ::crevice::internal::align_offset(
                             offset,
                             ::crevice::internal::max(
-                                <<#field_ty as #as_trait_path>::#as_trait_assoc as #mod_path::#layout_name>::ALIGNMENT,
+                                <<#field_ty as #as_trait_path>::Output as #mod_path::#layout_name>::ALIGNMENT,
                                 #pad_at_end
                             )
                         )
@@ -179,7 +173,7 @@ impl EmitOptions {
 
                 quote! {
                     #align_name: [u8; #align_name()],
-                    #field_name: <#field_ty as #as_trait_path>::#as_trait_assoc,
+                    #field_name: <#field_ty as #as_trait_path>::Output,
                 }
             })
             .collect();
@@ -215,19 +209,20 @@ impl EmitOptions {
         // ...we should generate an expression like this:
         //
         // max(ty2_align, max(ty1_align, min_align))
-        let struct_alignment = fields.named.iter().fold(
-            quote!(#min_struct_alignment),
-            |last, field| {
-                let field_ty = &field.ty;
+        let struct_alignment =
+            fields
+                .named
+                .iter()
+                .fold(quote!(#min_struct_alignment), |last, field| {
+                    let field_ty = &field.ty;
 
-                quote! {
-                    ::crevice::internal::max(
-                        <<#field_ty as #as_trait_path>::#as_trait_assoc as #trait_path>::ALIGNMENT,
-                        #last,
-                    )
-                }
-            },
-        );
+                    quote! {
+                        ::crevice::internal::max(
+                            <<#field_ty as #as_trait_path>::Output as #trait_path>::ALIGNMENT,
+                            #last,
+                        )
+                    }
+                });
 
         // For testing purposes, we can optionally generate type layout
         // information using the type-layout crate.
@@ -257,17 +252,17 @@ impl EmitOptions {
             }
 
             impl #impl_generics #as_trait_path for #name #ty_generics #where_clause {
-                type #as_trait_assoc = #generated_name;
+                type Output = #generated_name;
 
-                fn #as_trait_method(&self) -> Self::#as_trait_assoc {
-                    Self::#as_trait_assoc {
+                fn #as_trait_method(&self) -> Self::Output {
+                    Self::Output {
                         #( #field_initializers, )*
 
                         ..::crevice::internal::bytemuck::Zeroable::zeroed()
                     }
                 }
 
-                fn #from_trait_method(value: Self::#as_trait_assoc) -> Self {
+                fn #from_trait_method(value: Self::Output) -> Self {
                     Self {
                         #( #field_unwrappers, )*
                     }

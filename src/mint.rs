@@ -8,9 +8,9 @@ macro_rules! mint_vectors {
     ( $( $mint_ty:ty, $glsl_name:ident, $std_name:ident, ( $($field:ident),* ), )* ) => {
         $(
             impl AsStd140 for $mint_ty {
-                type Std140Type = std140::$std_name;
+                type Output = std140::$std_name;
 
-                fn as_std140(&self) -> Self::Std140Type {
+                fn as_std140(&self) -> Self::Output {
                     std140::$std_name {
                         $(
                             $field: self.$field,
@@ -18,7 +18,7 @@ macro_rules! mint_vectors {
                     }
                 }
 
-                fn from_std140(value: Self::Std140Type) -> Self {
+                fn from_std140(value: Self::Output) -> Self {
                     Self {
                         $(
                             $field: value.$field,
@@ -28,9 +28,9 @@ macro_rules! mint_vectors {
             }
 
             impl AsStd430 for $mint_ty {
-                type Std430Type = std430::$std_name;
+                type Output = std430::$std_name;
 
-                fn as_std430(&self) -> Self::Std430Type {
+                fn as_std430(&self) -> Self::Output {
                     std430::$std_name {
                         $(
                             $field: self.$field,
@@ -38,7 +38,7 @@ macro_rules! mint_vectors {
                     }
                 }
 
-                fn from_std430(value: Self::Std430Type) -> Self {
+                fn from_std430(value: Self::Output) -> Self {
                     Self {
                         $(
                             $field: value.$field,
@@ -80,9 +80,9 @@ macro_rules! mint_matrices {
     ( $( $mint_ty:ty, $glsl_name:ident, $std_name:ident, ( $($field:ident),* ), )* ) => {
         $(
             impl AsStd140 for $mint_ty {
-                type Std140Type = std140::$std_name;
+                type Output = std140::$std_name;
 
-                fn as_std140(&self) -> Self::Std140Type {
+                fn as_std140(&self) -> Self::Output {
                     std140::$std_name {
                         $(
                             $field: self.$field.as_std140(),
@@ -91,7 +91,7 @@ macro_rules! mint_matrices {
                     }
                 }
 
-                fn from_std140(value: Self::Std140Type) -> Self {
+                fn from_std140(value: Self::Output) -> Self {
                     Self {
                         $(
                             $field: <_ as AsStd140>::from_std140(value.$field),
@@ -101,9 +101,9 @@ macro_rules! mint_matrices {
             }
 
             impl AsStd430 for $mint_ty {
-                type Std430Type = std430::$std_name;
+                type Output = std430::$std_name;
 
-                fn as_std430(&self) -> Self::Std430Type {
+                fn as_std430(&self) -> Self::Output {
                     std430::$std_name {
                         $(
                             $field: self.$field.as_std430(),
@@ -112,7 +112,7 @@ macro_rules! mint_matrices {
                     }
                 }
 
-                fn from_std430(value: Self::Std430Type) -> Self {
+                fn from_std430(value: Self::Output) -> Self {
                     Self {
                         $(
                             $field: <_ as AsStd430>::from_std430(value.$field),

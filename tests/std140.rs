@@ -8,7 +8,7 @@ macro_rules! assert_std140_offsets {
     ((size = $size:literal, align = $align:literal) $struct:ident {
         $( $field:ident: $offset:literal, )*
     }) => {
-        type Target = <$struct as AsStd140>::Std140Type;
+        type Target = <$struct as AsStd140>::Output;
 
         assert_eq!(std::mem::size_of::<Target>(), $size);
         assert_eq!(Target::ALIGNMENT, $align);
@@ -192,6 +192,7 @@ fn there_and_back_again() {
 
 #[test]
 fn generate_struct_glsl() {
+    #[allow(dead_code)]
     #[derive(GlslStruct)]
     struct TestGlsl {
         foo: mint::Vector3<f32>,

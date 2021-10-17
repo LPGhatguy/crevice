@@ -78,26 +78,26 @@ write_to_gpu_buffer(camera_std430.as_bytes());
 */
 pub trait AsStd430 {
     /// The `std430` version of this value.
-    type Std430Type: Std430;
+    type Output: Std430;
 
     /// Convert this value into the `std430` version of itself.
-    fn as_std430(&self) -> Self::Std430Type;
+    fn as_std430(&self) -> Self::Output;
 
     /// Returns the size of the `std430` version of this type. Useful for
     /// pre-sizing buffers.
     fn std430_size_static() -> usize {
-        size_of::<Self::Std430Type>()
+        size_of::<Self::Output>()
     }
 
     /// Converts from `std430` version of self to self.
-    fn from_std430(value: Self::Std430Type) -> Self;
+    fn from_std430(value: Self::Output) -> Self;
 }
 
 impl<T> AsStd430 for T
 where
     T: Std430,
 {
-    type Std430Type = Self;
+    type Output = Self;
 
     fn as_std430(&self) -> Self {
         *self
@@ -144,7 +144,7 @@ where
     }
 
     fn std430_size(&self) -> usize {
-        size_of::<<Self as AsStd430>::Std430Type>()
+        size_of::<<Self as AsStd430>::Output>()
     }
 }
 
