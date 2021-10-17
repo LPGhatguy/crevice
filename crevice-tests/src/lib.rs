@@ -17,7 +17,7 @@ mod util;
 
 use crevice::glsl::GlslStruct;
 use crevice::std140::AsStd140;
-use mint::{ColumnMatrix3, Vector2, Vector3, Vector4};
+use mint::{ColumnMatrix3, ColumnMatrix4, Vector2, Vector3, Vector4};
 
 #[test]
 fn two_f32() {
@@ -65,6 +65,25 @@ fn mat3_bare() {
         x: [1.0, 2.0, 3.0].into(),
         y: [4.0, 5.0, 6.0].into(),
         z: [7.0, 8.0, 9.0].into(),
+    });
+}
+
+#[test]
+fn mat4_bare() {
+    type Mat4 = ColumnMatrix4<f32>;
+
+    assert_std140_offsets!((size = 64, align = 16) Mat4 {
+        x: 0,
+        y: 16,
+        z: 32,
+        w: 48,
+    });
+
+    test_round_trip_primitive(Mat4 {
+        x: [1.0, 2.0, 3.0, 4.0].into(),
+        y: [5.0, 6.0, 7.0, 8.0].into(),
+        z: [9.0, 10.0, 11.0, 12.0].into(),
+        w: [13.0, 14.0, 15.0, 16.0].into(),
     });
 }
 
