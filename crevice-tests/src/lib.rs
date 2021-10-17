@@ -1,6 +1,13 @@
 #![cfg(test)]
 
+#[cfg(feature = "wgpu-validation")]
 mod gpu;
+
+#[cfg(feature = "wgpu-validation")]
+use gpu::assert_round_trip;
+
+#[cfg(not(feature = "wgpu-validation"))]
+fn assert_round_trip<T>(_value: T) {}
 
 #[macro_use]
 mod util;
@@ -8,8 +15,6 @@ mod util;
 use crevice::glsl::GlslStruct;
 use crevice::std140::AsStd140;
 use mint::{ColumnMatrix3, Vector2, Vector3, Vector4};
-
-use gpu::assert_round_trip;
 
 #[test]
 fn two_f32() {

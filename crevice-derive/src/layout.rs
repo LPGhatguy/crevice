@@ -224,19 +224,10 @@ impl EmitOptions {
                     }
                 });
 
-        // For testing purposes, we can optionally generate type layout
-        // information using the type-layout crate.
-        let type_layout_derive = if cfg!(feature = "test_type_layout") {
-            quote!(#[derive(::type_layout::TypeLayout)])
-        } else {
-            quote!()
-        };
-
         quote! {
             #( #alignment_calculators )*
 
             #[derive(Debug, Clone, Copy)]
-            #type_layout_derive
             #[repr(C)]
             #[allow(non_snake_case)]
             #visibility struct #generated_name #ty_generics #where_clause {

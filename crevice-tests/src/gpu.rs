@@ -40,7 +40,7 @@ pub fn assert_round_trip<T: std::fmt::Debug + PartialEq + AsStd140 + GlslStruct>
     }
 }
 
-pub fn round_trip<T: AsStd140 + GlslStruct>(value: &T) -> T {
+fn round_trip<T: AsStd140 + GlslStruct>(value: &T) -> T {
     let (device, queue) = setup();
 
     let glsl_shader = BASE_SHADER
