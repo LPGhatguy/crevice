@@ -9,7 +9,7 @@ use crate::std140::Writer;
 
 /// Trait implemented for all `std140` primitives. Generally should not be
 /// implemented outside this crate.
-pub unsafe trait Std140: Copy + Zeroable + Pod {
+pub unsafe trait Std140: Copy + Zeroable + Pod + AsStd140<Output = Self> {
     /// The required alignment of the type. Must be a power of two.
     ///
     /// This is distinct from the value returned by `std::mem::align_of` because
@@ -91,21 +91,6 @@ pub trait AsStd140 {
 
     /// Converts from `std140` version of self to self.
     fn from_std140(val: Self::Output) -> Self;
-}
-
-impl<T> AsStd140 for T
-where
-    T: Std140,
-{
-    type Output = Self;
-
-    fn as_std140(&self) -> Self {
-        *self
-    }
-
-    fn from_std140(x: Self) -> Self {
-        x
-    }
 }
 
 /// Trait implemented for all types that can be written into a buffer as

@@ -246,6 +246,25 @@ pub fn emit(
         quote!()
     };
 
+    // FIXME: Holdover so I can port just std140 for now.
+    let as_impl = if min_struct_alignment == 16 {
+        quote! {
+            impl #impl_generics #as_trait_path for #generated_name #ty_generics #where_clause {
+                type Output = Self;
+
+                fn as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
+        }
+    } else {
+        quote!()
+    };
+
     quote! {
         #pad_fn_impls
         #struct_definition
@@ -253,7 +272,9 @@ pub fn emit(
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
 
-        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+        #as_impl
+
+        unsafe impl #impl_generics #trait_path for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
             const PAD_AT_END: bool = true;
         }

@@ -1,22 +1,37 @@
 use bytemuck::{Pod, Zeroable};
 
 use crate::glsl::Glsl;
-use crate::std140::Std140;
+use crate::std140::{AsStd140, Std140};
 
-unsafe impl Std140 for f32 {
-    const ALIGNMENT: usize = 4;
+macro_rules! primitives {
+    (
+        $( align($align:literal) $prim:ident )+
+    ) => {
+        $(
+            impl AsStd140 for $prim {
+                type Output = Self;
+
+                fn as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
+
+            unsafe impl Std140 for $prim {
+                const ALIGNMENT: usize = $align;
+            }
+        )+
+    }
 }
 
-unsafe impl Std140 for f64 {
-    const ALIGNMENT: usize = 8;
-}
-
-unsafe impl Std140 for i32 {
-    const ALIGNMENT: usize = 4;
-}
-
-unsafe impl Std140 for u32 {
-    const ALIGNMENT: usize = 4;
+primitives! {
+    align(4) f32
+    align(8) f64
+    align(4) i32
+    align(4) u32
 }
 
 macro_rules! vectors {
@@ -36,6 +51,18 @@ macro_rules! vectors {
 
             unsafe impl Zeroable for $name {}
             unsafe impl Pod for $name {}
+
+            impl AsStd140 for $name {
+                type Output = Self;
+
+                fn as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
 
             unsafe impl Std140 for $name {
                 const ALIGNMENT: usize = $align;
@@ -93,6 +120,18 @@ macro_rules! matrices {
 
             unsafe impl Zeroable for $name {}
             unsafe impl Pod for $name {}
+
+            impl AsStd140 for $name {
+                type Output = Self;
+
+                fn as_std140(&self) -> Self {
+                    *self
+                }
+
+                fn from_std140(value: Self) -> Self {
+                    value
+                }
+            }
 
             unsafe impl Std140 for $name {
                 const ALIGNMENT: usize = $align;
