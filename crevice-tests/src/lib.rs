@@ -28,7 +28,12 @@ fn two_f32() {
         y: f32,
     }
 
-    assert_std140_offsets!((size = 16, align = 16) TwoF32 {
+    assert_std140!((size = 16, align = 16) TwoF32 {
+        x: 0,
+        y: 4,
+    });
+
+    assert_std430!((size = 8, align = 4) TwoF32 {
         x: 0,
         y: 4,
     });
@@ -43,7 +48,7 @@ fn vec2() {
         one: Vector2<f32>,
     }
 
-    assert_std140_offsets!((size = 16, align = 16) UseVec2 {
+    assert_std140!((size = 16, align = 16) UseVec2 {
         one: 0,
     });
 
@@ -56,7 +61,7 @@ fn vec2() {
 fn mat3_bare() {
     type Mat3 = ColumnMatrix3<f32>;
 
-    assert_std140_offsets!((size = 48, align = 16) Mat3 {
+    assert_std140!((size = 48, align = 16) Mat3 {
         x: 0,
         y: 16,
         z: 32,
@@ -73,7 +78,7 @@ fn mat3_bare() {
 fn mat4_bare() {
     type Mat4 = ColumnMatrix4<f32>;
 
-    assert_std140_offsets!((size = 64, align = 16) Mat4 {
+    assert_std140!((size = 64, align = 16) Mat4 {
         x: 0,
         y: 16,
         z: 32,
@@ -107,7 +112,7 @@ fn dvec4() {
         doubles: Vector4<f64>,
     }
 
-    assert_std140_offsets!((size = 32, align = 32) UsingDVec4 {
+    assert_std140!((size = 32, align = 32) UsingDVec4 {
         doubles: 0,
     });
 
@@ -129,7 +134,7 @@ fn four_f64() {
         w: f64,
     }
 
-    assert_std140_offsets!((size = 32, align = 16) FourF64 {
+    assert_std140!((size = 32, align = 16) FourF64 {
         x: 0,
         y: 8,
         z: 16,
@@ -155,7 +160,15 @@ fn two_vec3() {
         two: Vector3<f32>,
     }
 
-    assert_std140_offsets!((size = 32, align = 16) TwoVec3 {
+    print_std140!(TwoVec3);
+    print_std430!(TwoVec3);
+
+    assert_std140!((size = 32, align = 16) TwoVec3 {
+        one: 0,
+        two: 16,
+    });
+
+    assert_std430!((size = 32, align = 16) TwoVec3 {
         one: 0,
         two: 16,
     });
@@ -174,7 +187,7 @@ fn two_vec4() {
         two: Vector4<f32>,
     }
 
-    assert_std140_offsets!((size = 32, align = 16) TwoVec4 {
+    assert_std140!((size = 32, align = 16) TwoVec4 {
         one: 0,
         two: 16,
     });
@@ -193,7 +206,7 @@ fn vec3_then_f32() {
         two: f32,
     }
 
-    assert_std140_offsets!((size = 16, align = 16) Vec3ThenF32 {
+    assert_std140!((size = 16, align = 16) Vec3ThenF32 {
         one: 0,
         two: 12,
     });
@@ -213,7 +226,7 @@ fn mat3_padding() {
         two: f32,
     }
 
-    assert_std140_offsets!((size = 64, align = 16) Mat3Padding {
+    assert_std140!((size = 64, align = 16) Mat3Padding {
         one: 0,
         two: 48,
     });
@@ -238,7 +251,7 @@ fn padding_after_struct() {
         small_field: f32,
     }
 
-    assert_std140_offsets!((size = 32, align = 16) PaddingAfterStruct {
+    assert_std140!((size = 32, align = 16) PaddingAfterStruct {
         base_value: 0,
         small_field: 16,
     });
@@ -273,7 +286,7 @@ fn proper_offset_calculations_for_differing_member_sizes() {
     //
     // Total size is 48.
 
-    assert_std140_offsets!((size = 48, align = 16) Outer {
+    assert_std140!((size = 48, align = 16) Outer {
         leading: 0,
         trailing: 32,
     });
