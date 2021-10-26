@@ -1,7 +1,7 @@
 [package]
 name = "crevice"
 description = "Create GLSL-compatible versions of structs with explicitly-initialized padding"
-version = "0.7.1"
+version = "0.8.0"
 edition = "2018"
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 documentation = "https://docs.rs/crevice"
@@ -23,7 +23,7 @@ members = ["crevice-derive", "crevice-tests"]
 default-members = ["crevice-derive", "crevice-tests"]
 
 [dependencies]
-crevice-derive = { version = "0.7.1", path = "crevice-derive" }
+crevice-derive = { version = "0.8.0", path = "crevice-derive" }
 
 bytemuck = "1.4.1"
 mint = "0.5.8"

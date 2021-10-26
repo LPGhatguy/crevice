@@ -1,7 +1,23 @@
 # Crevice Changelog
 
 ## Unreleased Changes
-* Increased MSRV to 1.51.0.
+
+## [0.8.0] - 2021-10-26
+* Added support for many math libraries directly: ([#37])
+	* cgmath 0.18, behind the `cgmath` feature
+	* nalgebra 0.29, behind the `nalgebra` feature
+	* glam 0.19, behind the `glam` feature
+* Added support for generating GLSL source from structs. ([#33])
+* Fixed many, many subtle alignment bugs. ([#28], [#35])
+* Disabled bool-based types temporarily ([#36])
+* Increased MSRV to 1.52.1.
+
+[#28]: https://github.com/LPGhatguy/crevice/issues/28
+[#33]: https://github.com/LPGhatguy/crevice/pull/33
+[#35]: https://github.com/LPGhatguy/crevice/pull/35
+[#36]: https://github.com/LPGhatguy/crevice/issues/36
+[#37]: https://github.com/LPGhatguy/crevice/pull/37
+[0.8.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.8.0
 
 ## [0.7.1] - 2021-07-24
 * Fixed broken crates.io release by publishing crevice-derive too.

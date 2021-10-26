@@ -11,12 +11,27 @@ method to allow safely packing data into buffers for uploading.
 Generated structs also implement [`bytemuck::Zeroable`] and
 [`bytemuck::Pod`] for use with other libraries.
 
-Crevice is similar to [`glsl-layout`][glsl-layout], but supports `mint` types
-and explicitly initializes padding to remove one source of undefined behavior.
+Crevice is similar to [`glsl-layout`][glsl-layout], but supports types from many
+math crates, can generate GLSL source from structs, and explicitly initializes
+padding to remove one source of undefined behavior.
 
-Examples in this crate use cgmath, but any math crate that works with the mint
-crate will also work. Some other crates include nalgebra, ultraviolet, glam, and
-vek.
+Crevice has support for many Rust math libraries via feature flags, and most
+other math libraries by use of the mint crate. Crevice currently supports:
+
+* mint 0.5, enabled by default
+* cgmath 0.18, using the `cgmath` feature
+* nalgebra 0.29, using the `nalgebra` feature
+* glam 0.19, using the `glam` feature
+
+PRs are welcome to add or update math libraries to Crevice.
+
+If your math library is not supported, it's possible to define structs using the
+types from mint and convert your math library's types into mint types. This is
+supported by most Rust math libraries.
+
+Your math library may require you to turn on a feature flag to get mint support.
+For example, cgmath requires the "mint" feature to be enabled to allow
+conversions to and from mint types.
 
 ### Examples
 
@@ -36,8 +51,6 @@ uniform MAIN {
 
 ```rust
 use crevice::std140::{AsStd140, Std140};
-use cgmath::prelude::*;
-use cgmath::{Matrix3, Vector3};
 
 #[derive(AsStd140)]
 struct MainUniform {
@@ -47,8 +60,12 @@ struct MainUniform {
 }
 
 let value = MainUniform {
-    orientation: Matrix3::identity().into(),
-    position: Vector3::new(1.0, 2.0, 3.0).into(),
+    orientation: [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0],
+    ].into(),
+    position: [1.0, 2.0, 3.0].into(),
     scale: 4.0,
 };
 
@@ -117,10 +134,13 @@ unmap_gpu_buffer();
 ### Features
 
 * `std` (default): Enables [`std::io::Write`]-based structs.
+* `cgmath`: Enables support for types from cgmath.
+* `nalgebra`: Enables support for types from nalgebra.
+* `glam`: Enables support for types from glam.
 
 ### Minimum Supported Rust Version (MSRV)
 
-Crevice supports Rust 1.51.0 and newer due to use of new `const fn` features.
+Crevice supports Rust 1.52.1 and newer due to use of new `const fn` features.
 
 [glsl-layout]: https://github.com/rustgd/glsl-layout
 
