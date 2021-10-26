@@ -10,6 +10,7 @@
 * Added support for generating GLSL source from structs. ([#33])
 * Fixed many, many subtle alignment bugs. ([#28], [#35])
 * Disabled bool-based types temporarily ([#36])
+* Renamed `AsStdN::StdNType` to `Output`.
 * Increased MSRV to 1.52.1.
 
 [#28]: https://github.com/LPGhatguy/crevice/issues/28
