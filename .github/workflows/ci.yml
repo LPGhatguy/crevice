@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        rust_version: [stable, "1.51.0"]
+        rust_version: [stable, "1.52.1"]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,10 +24,10 @@ jobs:
       run: rustup default ${{ matrix.rust_version }}
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --all-features
 
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --all-features
 
     - name: Rustfmt and Clippy
       run: |
