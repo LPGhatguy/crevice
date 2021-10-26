@@ -55,9 +55,7 @@ uniform CAMERA {
 } camera;
 ```
 
-```skip
-use cgmath::prelude::*;
-use cgmath::{Matrix4, Deg, perspective};
+```no_run
 use crevice::std430::{AsStd430, Std430};
 
 #[derive(AsStd430)]
@@ -66,9 +64,12 @@ struct CameraUniform {
     projection: mint::ColumnMatrix4<f32>,
 }
 
+let view: mint::ColumnMatrix4<f32> = todo!("your math code here");
+let projection: mint::ColumnMatrix4<f32> = todo!("your math code here");
+
 let camera = CameraUniform {
-    view: Matrix4::identity().into(),
-    projection: perspective(Deg(60.0), 16.0/9.0, 0.01, 100.0).into(),
+    view,
+    projection,
 };
 
 # fn write_to_gpu_buffer(bytes: &[u8]) {}

@@ -43,7 +43,7 @@ struct which contains only fields that also implement `AsStd140` can derive
 `AsStd140`.
 
 Types from the mint crate implement `AsStd140`, making them convenient for use
-in uniform types. Most Rust geometry crates, like cgmath, nalgebra, and
+in uniform types. Most Rust math crates, like cgmath, nalgebra, and
 ultraviolet support mint.
 
 ## Example
@@ -55,9 +55,7 @@ uniform CAMERA {
 } camera;
 ```
 
-```
-use cgmath::prelude::*;
-use cgmath::{Matrix4, Deg, perspective};
+```no_run
 use crevice::std140::{AsStd140, Std140};
 
 #[derive(AsStd140)]
@@ -66,9 +64,12 @@ struct CameraUniform {
     projection: mint::ColumnMatrix4<f32>,
 }
 
+let view: mint::ColumnMatrix4<f32> = todo!("your math code here");
+let projection: mint::ColumnMatrix4<f32> = todo!("your math code here");
+
 let camera = CameraUniform {
-    view: Matrix4::identity().into(),
-    projection: perspective(Deg(60.0), 16.0/9.0, 0.01, 100.0).into(),
+    view,
+    projection,
 };
 
 # fn write_to_gpu_buffer(bytes: &[u8]) {}
