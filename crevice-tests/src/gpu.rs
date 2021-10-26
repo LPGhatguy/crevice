@@ -210,7 +210,7 @@ where
             data.len() as wgpu::BufferAddress,
         );
 
-        self.queue.submit([encoder.finish()]);
+        self.queue.submit(std::iter::once(encoder.finish()));
 
         let output_slice = output_cpu_buffer.slice(..);
         let output_future = output_slice.map_async(wgpu::MapMode::Read);
