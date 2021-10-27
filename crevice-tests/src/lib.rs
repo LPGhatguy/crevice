@@ -21,6 +21,24 @@ use crevice::std430::AsStd430;
 use mint::{ColumnMatrix2, ColumnMatrix3, ColumnMatrix4, Vector2, Vector3, Vector4};
 
 #[test]
+fn why_not_glam() {
+    #[derive(AsStd140)]
+    struct UsingGlam {
+        x: glam::Vec3,
+        y: glam::Mat3,
+        z: f32,
+    }
+
+    let value = UsingGlam {
+        x: glam::Vec3::ZERO,
+        y: glam::Mat3::IDENTITY,
+        z: 0.0,
+    };
+
+    let _ = value.as_std140();
+}
+
+#[test]
 fn two_f32() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct TwoF32 {
