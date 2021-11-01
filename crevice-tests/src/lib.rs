@@ -356,23 +356,12 @@ fn array_strides_vec3() {
     });
 
     test_round_trip_struct(ArrayOfVector3 {
-        inner: [[0.0, 1.0, 2.0].into(); 4],
-    })
-}
-
-#[test]
-fn complex_array_glsl() {
-    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
-    struct Wrap {
-        inner: [[f32; 4]; 4],
-    }
-
-    test_round_trip_struct(Wrap {
         inner: [
-            [0.0, 1.0, 2.0, 3.0],
-            [1.0, 2.0, 3.0, 0.0],
-            [2.0, 3.0, 0.0, 1.0],
-            [3.0, 0.0, 1.0, 2.0],
+            [0.0, 1.0, 2.0].into(),
+            [3.0, 4.0, 5.0].into(),
+            [6.0, 7.0, 8.0].into(),
+            [9.0, 10.0, 11.0].into(),
         ],
     })
 }
+
