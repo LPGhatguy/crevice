@@ -364,4 +364,3 @@ fn array_strides_vec3() {
         ],
     })
 }
-
