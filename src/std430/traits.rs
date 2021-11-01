@@ -202,7 +202,7 @@ where
             res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
         }
 
-        return Self::Output::from_uninit_array(res);
+        Self::Output::from_uninit_array(res)
     }
 
     fn from_std430(val: Self::Output) -> Self {

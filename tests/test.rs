@@ -48,3 +48,14 @@ fn generate_struct_glsl() {
 
     insta::assert_display_snapshot!(TestGlsl::glsl_definition());
 }
+
+#[test]
+fn generate_struct_array_glsl() {
+    #[allow(dead_code)]
+    #[derive(GlslStruct)]
+    struct TestGlsl {
+        foo: [[mint::Vector3<f32>; 8]; 4],
+    }
+
+    insta::assert_display_snapshot!(TestGlsl::glsl_definition());
+}

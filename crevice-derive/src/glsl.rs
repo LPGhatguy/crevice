@@ -23,12 +23,15 @@ pub fn emit(input: DeriveInput) -> TokenStream {
     let glsl_fields = fields.named.iter().map(|field| {
         let field_ty = &field.ty;
         let field_name_str = Literal::string(&field.ident.as_ref().unwrap().to_string());
+        let field_as = quote! {<#field_ty as ::crevice::glsl::GlslArray>};
 
         quote! {
-            ::crevice::glsl::GlslField {
-                ty: <#field_ty as ::crevice::glsl::Glsl>::NAME,
-                name: #field_name_str,
-            }
+            s.push_str("\t");
+            s.push_str(#field_as::NAME);
+            s.push_str(" ");
+            s.push_str(#field_name_str);
+            <#field_as::ArraySize as ::crevice::glsl::DimensionList>::push_to_string(s);
+            s.push_str(";\n");
         }
     });
 
@@ -38,9 +41,9 @@ pub fn emit(input: DeriveInput) -> TokenStream {
         }
 
         unsafe impl #impl_generics #struct_trait_path for #name #ty_generics #where_clause {
-            const FIELDS: &'static [::crevice::glsl::GlslField] = &[
-                #( #glsl_fields, )*
-            ];
+            fn enumerate_fields(s: &mut String) {
+                #( #glsl_fields )*
+            }
         }
     }
 }

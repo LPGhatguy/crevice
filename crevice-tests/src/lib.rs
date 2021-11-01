@@ -342,16 +342,37 @@ fn array_strides_small_value() {
 
 #[test]
 fn array_strides_vec3() {
-    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
-    struct ArrayOfSmallValues {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
+    struct ArrayOfVector3 {
         inner: [Vector3<f32>; 4],
     }
 
-    assert_std140!((size = 64, align = 16) ArrayOfSmallValues {
+    assert_std140!((size = 64, align = 16) ArrayOfVector3 {
         inner: 0,
     });
 
-    assert_std430!((size = 64, align = 16) ArrayOfSmallValues {
+    assert_std430!((size = 64, align = 16) ArrayOfVector3 {
         inner: 0,
     });
+
+    test_round_trip_struct(ArrayOfVector3 {
+        inner: [[0.0, 1.0, 2.0].into(); 4],
+    })
+}
+
+#[test]
+fn complex_array_glsl() {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
+    struct Wrap {
+        inner: [[f32; 4]; 4],
+    }
+
+    test_round_trip_struct(Wrap {
+        inner: [
+            [0.0, 1.0, 2.0, 3.0],
+            [1.0, 2.0, 3.0, 0.0],
+            [2.0, 3.0, 0.0, 1.0],
+            [3.0, 0.0, 1.0, 2.0],
+        ],
+    })
 }

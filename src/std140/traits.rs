@@ -202,7 +202,7 @@ where
             res[i] = MaybeUninit::new(Std140Convertible::from_std140(self[i].as_std140()));
         }
 
-        return Self::Output::from_uninit_array(res);
+        Self::Output::from_uninit_array(res)
     }
 
     fn from_std140(val: Self::Output) -> Self {
