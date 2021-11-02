@@ -100,9 +100,11 @@ where
                 "std140 value did not round-trip through wgpu successfully.\n\
                 Input:  {:?}\n\
                 Output: {:?}\n\n\
+                Data: {:?}\n\
+                Bytes: {:?}\n\n\
                 GLSL shader:\n{}\n\n\
                 WGSL shader:\n{}",
-                value, output, glsl_shader, wgsl_shader,
+                value, output, data, bytes, glsl_shader, wgsl_shader,
             );
 
             panic!("wgpu round-trip failure for {}", T::NAME);

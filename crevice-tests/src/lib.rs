@@ -344,23 +344,25 @@ fn array_strides_small_value() {
 fn array_strides_vec3() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct ArrayOfVector3 {
-        inner: [Vector3<f32>; 4],
+        inner: [Vector3<u32>; 6],
     }
 
-    assert_std140!((size = 64, align = 16) ArrayOfVector3 {
+    assert_std140!((size = 96, align = 16) ArrayOfVector3 {
         inner: 0,
     });
 
-    assert_std430!((size = 64, align = 16) ArrayOfVector3 {
+    assert_std430!((size = 96, align = 16) ArrayOfVector3 {
         inner: 0,
     });
 
     test_round_trip_struct(ArrayOfVector3 {
         inner: [
-            [0.0, 1.0, 2.0].into(),
-            [3.0, 4.0, 5.0].into(),
-            [6.0, 7.0, 8.0].into(),
-            [9.0, 10.0, 11.0].into(),
+            [0x00010203, 0x04050607, 0x08091011].into(),
+            [0x12131415, 0x16171819, 0x20212223].into(),
+            [0x24252627, 0x28293031, 0x32333435].into(),
+            [0x36373839, 0x40414243, 0x44454647].into(),
+            [0x48495051, 0x52535455, 0x56575859].into(),
+            [0x60616263, 0x64656667, 0x68697071].into(),
         ],
     })
 }
