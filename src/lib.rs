@@ -164,3 +164,4 @@ pub mod std430;
 pub mod internal;
 
 mod imp;
+mod bool;
