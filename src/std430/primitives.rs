@@ -1,8 +1,9 @@
+use crate::{
+    bool::GlslBoolean,
+    glsl::Glsl,
+    std430::{AsStd430, Std430},
+};
 use bytemuck::{Pod, Zeroable};
-use crate::bool::GlslBoolean;
-
-use crate::glsl::Glsl;
-use crate::std430::{AsStd430, Std430};
 
 unsafe impl Std430 for f32 {
     const ALIGNMENT: usize = 4;

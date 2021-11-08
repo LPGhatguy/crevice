@@ -1,8 +1,9 @@
+use crate::{
+    bool::GlslBoolean,
+    glsl::Glsl,
+    std140::{AsStd140, Std140},
+};
 use bytemuck::{Pod, Zeroable};
-use crate::bool::GlslBoolean;
-
-use crate::glsl::Glsl;
-use crate::std140::{AsStd140, Std140};
 
 unsafe impl Std140 for f32 {
     const ALIGNMENT: usize = 4;

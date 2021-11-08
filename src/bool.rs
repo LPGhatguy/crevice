@@ -1,5 +1,5 @@
+use bytemuck::{Pod, Zeroable};
 use core::fmt::{Debug, Formatter};
-use bytemuck::{Zeroable, Pod};
 
 #[derive(Eq, PartialEq, Clone, Copy)]
 pub struct GlslBoolean(u32);
