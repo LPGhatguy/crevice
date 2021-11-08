@@ -1,26 +1,31 @@
-use bytemuck::{Pod, Zeroable};
 use core::fmt::{Debug, Formatter};
 
-#[derive(Eq, PartialEq, Clone, Copy)]
-pub struct GlslBoolean(u32);
+use bytemuck::{Pod, Zeroable};
 
-unsafe impl Zeroable for GlslBoolean {}
-unsafe impl Pod for GlslBoolean {}
+/// GLSL's `bool` type.
+///
+/// Boolean values in GLSL are 32 bits, in contrast with Rust's 8 bit bools.
+#[derive(Clone, Copy, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct Bool(u32);
 
-impl From<bool> for GlslBoolean {
+unsafe impl Zeroable for Bool {}
+unsafe impl Pod for Bool {}
+
+impl From<bool> for Bool {
     fn from(v: bool) -> Self {
         Self(v as u32)
     }
 }
 
-impl From<GlslBoolean> for bool {
-    fn from(v: GlslBoolean) -> Self {
+impl From<Bool> for bool {
+    fn from(v: Bool) -> Self {
         v.0 != 0
     }
 }
 
-impl Debug for GlslBoolean {
+impl Debug for Bool {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        write!(f, "GlslBoolean({:?})", bool::from(*self))
+        write!(f, "Bool({:?})", bool::from(*self))
     }
 }

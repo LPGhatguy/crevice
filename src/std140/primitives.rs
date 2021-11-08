@@ -1,9 +1,8 @@
-use crate::{
-    bool::GlslBoolean,
-    glsl::Glsl,
-    std140::{AsStd140, Std140},
-};
 use bytemuck::{Pod, Zeroable};
+
+use crate::bool::Bool;
+use crate::glsl::Glsl;
+use crate::std140::{AsStd140, Std140};
 
 unsafe impl Std140 for f32 {
     const ALIGNMENT: usize = 4;
@@ -21,12 +20,12 @@ unsafe impl Std140 for u32 {
     const ALIGNMENT: usize = 4;
 }
 
-unsafe impl Std140 for GlslBoolean {
+unsafe impl Std140 for Bool {
     const ALIGNMENT: usize = 4;
 }
 
 impl AsStd140 for bool {
-    type Output = GlslBoolean;
+    type Output = Bool;
 
     fn as_std140(&self) -> Self::Output {
         (*self).into()
@@ -79,9 +78,9 @@ vectors! {
     #[doc = "Corresponds to a GLSL `uvec3` in std140 layout."] align(16) uvec3 UVec3<u32>(x, y, z)
     #[doc = "Corresponds to a GLSL `uvec4` in std140 layout."] align(16) uvec4 UVec4<u32>(x, y, z, w)
 
-    #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<GlslBoolean>(x, y)
-    #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<GlslBoolean>(x, y, z)
-    #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<GlslBoolean>(x, y, z, w)
+    #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<Bool>(x, y)
+    #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<Bool>(x, y, z)
+    #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<Bool>(x, y, z, w)
 
     #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) dvec2 DVec2<f64>(x, y)
     #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) dvec3 DVec3<f64>(x, y, z)
