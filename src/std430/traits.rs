@@ -40,7 +40,7 @@ pub unsafe trait Std430: Copy + Zeroable + Pod {
 }
 
 /// Trait specifically for Std430::Padded, implements conversions between padded type and base type.
-pub trait Std430Convertible<T: Std430>: Copy {
+pub trait Std430Convertible<T: Std430>: Copy + Pod {
     /// Convert from self to Std430
     fn into_std430(self) -> T;
     /// Convert from Std430 to self
@@ -60,6 +60,8 @@ impl<T: Std430> Std430Convertible<T> for T {
 /// For now, we'll just use this empty enum with no values.
 #[derive(Copy, Clone)]
 pub enum InvalidPadded {}
+unsafe impl Zeroable for InvalidPadded {}
+unsafe impl Pod for InvalidPadded {}
 impl<T: Std430> Std430Convertible<T> for InvalidPadded {
     fn into_std430(self) -> T {
         unimplemented!()
@@ -180,37 +182,23 @@ where
     type Padded = Self;
 }
 
-impl<T: Std430, const N: usize> Std430Array<T, N> {
-    fn uninit_array() -> [MaybeUninit<T::Padded>; N] {
-        unsafe { MaybeUninit::uninit().assume_init() }
-    }
-
-    fn from_uninit_array(a: [MaybeUninit<T::Padded>; N]) -> Self {
-        unsafe { core::mem::transmute_copy(&a) }
-    }
-}
-
-impl<T: AsStd430, const N: usize> AsStd430 for [T; N]
-where
-    <T::Output as Std430>::Padded: Pod,
-{
+impl<T: AsStd430, const N: usize> AsStd430 for [T; N] {
     type Output = Std430Array<T::Output, N>;
     fn as_std430(&self) -> Self::Output {
-        let mut res = Self::Output::uninit_array();
+        let mut res: [MaybeUninit<_>; N] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
-            res[i] = MaybeUninit::new(Std430Convertible::from_std430(self[i].as_std430()));
+            res[i] = MaybeUninit::new(<T::Output as Std430>::Padded::from_std430(
+                self[i].as_std430(),
+            ));
         }
 
-        Self::Output::from_uninit_array(res)
+        unsafe { core::mem::transmute_copy(&res) }
     }
 
     fn from_std430(val: Self::Output) -> Self {
-        let mut res: [MaybeUninit<T>; N] = unsafe { MaybeUninit::uninit().assume_init() };
-        for i in 0..N {
-            res[i] = MaybeUninit::new(T::from_std430(val.0[i].into_std430()));
-        }
-        unsafe { core::mem::transmute_copy(&res) }
+        val.0
+            .map(|x| T::from_std430(Std430Convertible::into_std430(x)))
     }
 }
 

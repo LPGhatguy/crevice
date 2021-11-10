@@ -40,7 +40,7 @@ pub unsafe trait Std140: Copy + Zeroable + Pod {
 }
 
 /// Trait specifically for Std140::Padded, implements conversions between padded type and base type.
-pub trait Std140Convertible<T: Std140>: Copy {
+pub trait Std140Convertible<T: Std140>: Copy + Pod {
     /// Convert from self to Std140
     fn into_std140(self) -> T;
     /// Convert from Std140 to self
@@ -60,6 +60,8 @@ impl<T: Std140> Std140Convertible<T> for T {
 /// For now, we'll just use this empty enum with no values.
 #[derive(Copy, Clone)]
 pub enum InvalidPadded {}
+unsafe impl Zeroable for InvalidPadded {}
+unsafe impl Pod for InvalidPadded {}
 impl<T: Std140> Std140Convertible<T> for InvalidPadded {
     fn into_std140(self) -> T {
         unimplemented!()
@@ -180,37 +182,23 @@ where
     type Padded = Self;
 }
 
-impl<T: Std140, const N: usize> Std140Array<T, N> {
-    fn uninit_array() -> [MaybeUninit<T::Padded>; N] {
-        unsafe { MaybeUninit::uninit().assume_init() }
-    }
-
-    fn from_uninit_array(a: [MaybeUninit<T::Padded>; N]) -> Self {
-        unsafe { core::mem::transmute_copy(&a) }
-    }
-}
-
-impl<T: AsStd140, const N: usize> AsStd140 for [T; N]
-where
-    <T::Output as Std140>::Padded: Pod,
-{
+impl<T: AsStd140, const N: usize> AsStd140 for [T; N] {
     type Output = Std140Array<T::Output, N>;
     fn as_std140(&self) -> Self::Output {
-        let mut res = Self::Output::uninit_array();
+        let mut res: [MaybeUninit<_>; N] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for i in 0..N {
-            res[i] = MaybeUninit::new(Std140Convertible::from_std140(self[i].as_std140()));
+            res[i] = MaybeUninit::new(<T::Output as Std140>::Padded::from_std140(
+                self[i].as_std140(),
+            ));
         }
 
-        Self::Output::from_uninit_array(res)
+        unsafe { core::mem::transmute_copy(&res) }
     }
 
     fn from_std140(val: Self::Output) -> Self {
-        let mut res: [MaybeUninit<T>; N] = unsafe { MaybeUninit::uninit().assume_init() };
-        for i in 0..N {
-            res[i] = MaybeUninit::new(T::from_std140(Std140Convertible::into_std140(val.0[i])));
-        }
-        unsafe { core::mem::transmute_copy(&res) }
+        val.0
+            .map(|x| T::from_std140(Std140Convertible::into_std140(x)))
     }
 }
 

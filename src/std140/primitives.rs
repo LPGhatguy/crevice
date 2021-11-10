@@ -1,10 +1,10 @@
+use core::mem::size_of;
+
 use bytemuck::{Pod, Zeroable};
 
 use crate::glsl::Glsl;
 use crate::std140::{Std140, Std140Padded};
-
 use crate::internal::{align_offset, max};
-use core::mem::size_of;
 
 unsafe impl Std140 for f32 {
     const ALIGNMENT: usize = 4;

@@ -1,10 +1,10 @@
+use crate::internal::align_offset;
+use core::mem::size_of;
+
 use bytemuck::{Pod, Zeroable};
 
 use crate::glsl::Glsl;
 use crate::std430::{Std430, Std430Padded};
-
-use crate::internal::align_offset;
-use core::mem::size_of;
 
 unsafe impl Std430 for f32 {
     const ALIGNMENT: usize = 4;
