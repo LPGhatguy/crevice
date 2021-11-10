@@ -7,6 +7,8 @@ mod traits;
 #[cfg(feature = "std")]
 mod writer;
 
+pub use crate::bool::Bool;
+
 pub use self::primitives::*;
 pub use self::sizer::*;
 pub use self::traits::*;

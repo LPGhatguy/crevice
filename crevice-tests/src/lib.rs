@@ -325,6 +325,25 @@ fn proper_offset_calculations_for_differing_member_sizes() {
 }
 
 #[test]
+fn bools_and_bool_vectors() {
+    #[derive(AsStd140, AsStd430)]
+    struct ContainsBools {
+        x: bool,
+        y: Vector2<bool>,
+    }
+
+    assert_std140!((size = 16, align = 16) ContainsBools {
+        x: 0,
+        y: 8,
+    });
+
+    assert_std430!((size = 16, align = 8) ContainsBools {
+        x: 0,
+        y: 8,
+    });
+}
+
+#[test]
 fn array_strides_small_value() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430)]
     struct ArrayOfSmallValues {

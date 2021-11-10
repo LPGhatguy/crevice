@@ -1,6 +1,9 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Added correct support for bool-based types. ([#39])
+
+[#39]: https://github.com/LPGhatguy/crevice/pull/39
 
 ## [0.8.0] - 2021-10-26
 * Added support for many math libraries directly: ([#37])

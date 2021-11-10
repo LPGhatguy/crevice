@@ -11,10 +11,9 @@ easy_impl! {
     UVec3 cgmath::Vector3<u32> { x, y, z },
     UVec4 cgmath::Vector4<u32> { x, y, z, w },
 
-    // bool vectors are disabled due to https://github.com/LPGhatguy/crevice/issues/36
-    // BVec2 cgmath::Vector2<bool> { x, y },
-    // BVec3 cgmath::Vector3<bool> { x, y, z },
-    // BVec4 cgmath::Vector4<bool> { x, y, z, w },
+    BVec2 cgmath::Vector2<bool> { x, y },
+    BVec3 cgmath::Vector3<bool> { x, y, z },
+    BVec4 cgmath::Vector4<bool> { x, y, z, w },
 
     DVec2 cgmath::Vector2<f64> { x, y },
     DVec3 cgmath::Vector3<f64> { x, y, z },

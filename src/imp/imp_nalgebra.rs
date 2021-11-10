@@ -8,10 +8,9 @@ minty_impl! {
     mint::Vector2<u32> => nalgebra::Vector2<u32>,
     mint::Vector3<u32> => nalgebra::Vector3<u32>,
     mint::Vector4<u32> => nalgebra::Vector4<u32>,
-    // bool vectors are disabled due to https://github.com/LPGhatguy/crevice/issues/36
-    // mint::Vector2<bool> => nalgebra::Vector2<bool>,
-    // mint::Vector3<bool> => nalgebra::Vector3<bool>,
-    // mint::Vector4<bool> => nalgebra::Vector4<bool>,
+    mint::Vector2<bool> => nalgebra::Vector2<bool>,
+    mint::Vector3<bool> => nalgebra::Vector3<bool>,
+    mint::Vector4<bool> => nalgebra::Vector4<bool>,
     mint::Vector2<f64> => nalgebra::Vector2<f64>,
     mint::Vector3<f64> => nalgebra::Vector3<f64>,
     mint::Vector4<f64> => nalgebra::Vector4<f64>,

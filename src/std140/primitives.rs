@@ -2,8 +2,9 @@ use core::mem::size_of;
 
 use bytemuck::{Pod, Zeroable};
 
+use crate::bool::Bool;
 use crate::glsl::Glsl;
-use crate::std140::{Std140, Std140Padded};
+use crate::std140::{AsStd140, Std140, Std140Padded};
 use crate::internal::{align_offset, max};
 
 unsafe impl Std140 for f32 {
@@ -24,6 +25,23 @@ unsafe impl Std140 for i32 {
 unsafe impl Std140 for u32 {
     const ALIGNMENT: usize = 4;
     type Padded = Std140Padded<Self, 12>;
+}
+
+unsafe impl Std140 for Bool {
+    const ALIGNMENT: usize = 4;
+    type Padded = Std140Padded<Self, 12>;
+}
+
+impl AsStd140 for bool {
+    type Output = Bool;
+
+    fn as_std140(&self) -> Self::Output {
+        (*self).into()
+    }
+
+    fn from_std140(val: Self::Output) -> Self {
+        val.into()
+    }
 }
 
 macro_rules! vectors {
@@ -69,11 +87,9 @@ vectors! {
     #[doc = "Corresponds to a GLSL `uvec3` in std140 layout."] align(16) uvec3 UVec3<u32>(x, y, z)
     #[doc = "Corresponds to a GLSL `uvec4` in std140 layout."] align(16) uvec4 UVec4<u32>(x, y, z, w)
 
-    // bool vectors are disabled due to https://github.com/LPGhatguy/crevice/issues/36
-
-    // #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<bool>(x, y)
-    // #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<bool>(x, y, z)
-    // #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<bool>(x, y, z, w)
+    #[doc = "Corresponds to a GLSL `bvec2` in std140 layout."] align(8) bvec2 BVec2<Bool>(x, y)
+    #[doc = "Corresponds to a GLSL `bvec3` in std140 layout."] align(16) bvec3 BVec3<Bool>(x, y, z)
+    #[doc = "Corresponds to a GLSL `bvec4` in std140 layout."] align(16) bvec4 BVec4<Bool>(x, y, z, w)
 
     #[doc = "Corresponds to a GLSL `dvec2` in std140 layout."] align(16) dvec2 DVec2<f64>(x, y)
     #[doc = "Corresponds to a GLSL `dvec3` in std140 layout."] align(32) dvec3 DVec3<f64>(x, y, z)

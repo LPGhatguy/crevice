@@ -163,4 +163,5 @@ pub mod std430;
 #[doc(hidden)]
 pub mod internal;
 
+mod bool;
 mod imp;
