@@ -1,8 +1,8 @@
 use proc_macro2::{Literal, TokenStream};
 use quote::quote;
-use syn::{parse_quote, Data, DeriveInput, Fields, Path, Type, Expr};
 #[cfg(feature = "arrays")]
 use syn::TypeArray;
+use syn::{parse_quote, Data, DeriveInput, Expr, Fields, Path, Type};
 
 pub fn emit(input: DeriveInput) -> TokenStream {
     let fields = match &input.data {
@@ -55,9 +55,13 @@ fn remove_array_layers(mut ty: &Type) -> (&Type, Expr) {
 
     loop {
         match ty {
-            &Type::Array(TypeArray { ref elem, ref len, .. }) => {
+            &Type::Array(TypeArray {
+                ref elem, ref len, ..
+            }) => {
                 ty = elem.as_ref();
-                suffix = quote!(::crevice::internal::const_format::concatcp!("[", (#len as usize), "]", #suffix));
+                suffix = quote!(
+                    ::crevice::internal::const_format::concatcp!("[", (#len as usize), "]", #suffix)
+                );
             }
             _ => break,
         }

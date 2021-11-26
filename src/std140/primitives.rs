@@ -5,9 +5,9 @@ use bytemuck::{Pod, Zeroable};
 
 use crate::bool::Bool;
 use crate::glsl::Glsl;
-use crate::std140::{AsStd140, Std140};
 #[cfg(feature = "arrays")]
 use crate::internal::{align_offset, max};
+use crate::std140::{AsStd140, Std140};
 
 unsafe impl Std140 for f32 {
     const ALIGNMENT: usize = 4;

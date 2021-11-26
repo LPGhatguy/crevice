@@ -1,9 +1,9 @@
-use core::mem::{transmute_copy, MaybeUninit};
 use core::fmt::Debug;
+use core::mem::{transmute_copy, MaybeUninit};
 
-use bytemuck::{Zeroable, Pod};
+use bytemuck::{Pod, Zeroable};
 
-use super::{Std430, AsStd430};
+use super::{AsStd430, Std430};
 
 pub unsafe trait Std430ArrayItem: Std430 {
     type Padding: Zeroable + Copy + Debug;
@@ -12,13 +12,15 @@ pub unsafe trait Std430ArrayItem: Std430 {
 type Padded<T> = (T, <T as Std430ArrayItem>::Padding);
 
 fn wrap<T: AsStd430>(x: &T) -> Padded<T::Output>
-where T::Output: Std430ArrayItem
+where
+    T::Output: Std430ArrayItem,
 {
     (x.as_std430(), Zeroable::zeroed())
 }
 
 fn unwrap<T: AsStd430>(x: Padded<T::Output>) -> T
-    where T::Output: Std430ArrayItem
+where
+    T::Output: Std430ArrayItem,
 {
     T::from_std430(x.0)
 }
@@ -28,17 +30,15 @@ fn unwrap<T: AsStd430>(x: Padded<T::Output>) -> T
 #[repr(transparent)]
 pub struct Std430Array<T: Std430ArrayItem, const N: usize>([Padded<T>; N]);
 
-unsafe impl<T: Std430ArrayItem, const N: usize> Zeroable for Std430Array<T, N>
-{}
-unsafe impl<T: Std430ArrayItem, const N: usize> Pod for Std430Array<T, N>
-{}
-unsafe impl<T: Std430ArrayItem, const N: usize> Std430 for Std430Array<T, N>
-{
+unsafe impl<T: Std430ArrayItem, const N: usize> Zeroable for Std430Array<T, N> {}
+unsafe impl<T: Std430ArrayItem, const N: usize> Pod for Std430Array<T, N> {}
+unsafe impl<T: Std430ArrayItem, const N: usize> Std430 for Std430Array<T, N> {
     const ALIGNMENT: usize = T::ALIGNMENT;
 }
 
 impl<T: AsStd430, const N: usize> AsStd430 for [T; N]
-    where T::Output: Std430ArrayItem
+where
+    T::Output: Std430ArrayItem,
 {
     type Output = Std430Array<T::Output, N>;
     fn as_std430(&self) -> Self::Output {
@@ -52,8 +52,7 @@ impl<T: AsStd430, const N: usize> AsStd430 for [T; N]
     }
 
     fn from_std430(val: Self::Output) -> Self {
-        val.0
-            .map(|x| unwrap(x))
+        val.0.map(|x| unwrap(x))
     }
 }
 

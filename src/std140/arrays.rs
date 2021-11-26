@@ -1,9 +1,9 @@
-use core::mem::{transmute_copy, MaybeUninit};
 use core::fmt::Debug;
+use core::mem::{transmute_copy, MaybeUninit};
 
-use bytemuck::{Zeroable, Pod};
+use bytemuck::{Pod, Zeroable};
 
-use super::{Std140, AsStd140};
+use super::{AsStd140, Std140};
 
 pub unsafe trait Std140ArrayItem: Std140 {
     type Padding: Zeroable + Copy + Debug;
@@ -12,13 +12,15 @@ pub unsafe trait Std140ArrayItem: Std140 {
 type Padded<T> = (T, <T as Std140ArrayItem>::Padding);
 
 fn wrap<T: AsStd140>(x: &T) -> Padded<T::Output>
-where T::Output: Std140ArrayItem
+where
+    T::Output: Std140ArrayItem,
 {
     (x.as_std140(), Zeroable::zeroed())
 }
 
 fn unwrap<T: AsStd140>(x: Padded<T::Output>) -> T
-    where T::Output: Std140ArrayItem
+where
+    T::Output: Std140ArrayItem,
 {
     T::from_std140(x.0)
 }
@@ -28,17 +30,15 @@ fn unwrap<T: AsStd140>(x: Padded<T::Output>) -> T
 #[repr(transparent)]
 pub struct Std140Array<T: Std140ArrayItem, const N: usize>([Padded<T>; N]);
 
-unsafe impl<T: Std140ArrayItem, const N: usize> Zeroable for Std140Array<T, N>
-{}
-unsafe impl<T: Std140ArrayItem, const N: usize> Pod for Std140Array<T, N>
-{}
-unsafe impl<T: Std140ArrayItem, const N: usize> Std140 for Std140Array<T, N>
-{
+unsafe impl<T: Std140ArrayItem, const N: usize> Zeroable for Std140Array<T, N> {}
+unsafe impl<T: Std140ArrayItem, const N: usize> Pod for Std140Array<T, N> {}
+unsafe impl<T: Std140ArrayItem, const N: usize> Std140 for Std140Array<T, N> {
     const ALIGNMENT: usize = crate::internal::max(16, T::ALIGNMENT);
 }
 
 impl<T: AsStd140, const N: usize> AsStd140 for [T; N]
-    where T::Output: Std140ArrayItem
+where
+    T::Output: Std140ArrayItem,
 {
     type Output = Std140Array<T::Output, N>;
     fn as_std140(&self) -> Self::Output {
@@ -52,8 +52,7 @@ impl<T: AsStd140, const N: usize> AsStd140 for [T; N]
     }
 
     fn from_std140(val: Self::Output) -> Self {
-        val.0
-            .map(|x| unwrap(x))
+        val.0.map(|x| unwrap(x))
     }
 }
 

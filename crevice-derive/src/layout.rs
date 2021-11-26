@@ -95,8 +95,10 @@ pub fn emit(
         output.into_iter().collect::<TokenStream>()
     };
 
-    let pad_fn_impls: TokenStream = pad_fns.iter().enumerate().map(
-        |(index, pad_fn)| {
+    let pad_fn_impls: TokenStream = pad_fns
+        .iter()
+        .enumerate()
+        .map(|(index, pad_fn)| {
             let starting_offset = offset_after_field(index);
 
             let next_field_or_self_alignment = fields
