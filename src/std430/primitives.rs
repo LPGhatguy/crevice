@@ -1,4 +1,4 @@
-use crate::internal::align_offset;
+#[cfg(feature = "arrays")]
 use core::mem::size_of;
 
 use bytemuck::{Pod, Zeroable};
@@ -6,6 +6,8 @@ use bytemuck::{Pod, Zeroable};
 use crate::bool::Bool;
 use crate::glsl::Glsl;
 use crate::std430::{AsStd430, Std430};
+#[cfg(feature = "arrays")]
+use crate::internal::align_offset;
 
 unsafe impl Std430 for f32 {
     const ALIGNMENT: usize = 4;

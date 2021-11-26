@@ -1,3 +1,4 @@
+#[cfg(feature = "arrays")]
 use core::mem::size_of;
 
 use bytemuck::{Pod, Zeroable};
@@ -5,6 +6,7 @@ use bytemuck::{Pod, Zeroable};
 use crate::bool::Bool;
 use crate::glsl::Glsl;
 use crate::std140::{AsStd140, Std140};
+#[cfg(feature = "arrays")]
 use crate::internal::{align_offset, max};
 
 unsafe impl Std140 for f32 {

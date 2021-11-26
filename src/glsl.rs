@@ -1,33 +1,6 @@
 //! Defines traits and types for generating GLSL code from Rust definitions.
 
 pub use crevice_derive::GlslStruct;
-use std::marker::PhantomData;
-
-/// Type-level linked list of array dimensions
-pub struct Dimension<A, const N: usize> {
-    _marker: PhantomData<A>,
-}
-
-/// Type-level linked list terminator for array dimensions.
-pub struct DimensionNil;
-
-/// Trait for type-level array dimensions. Probably shouldn't be implemented outside this crate.
-pub unsafe trait DimensionList {
-    /// Write dimensions in square brackets to a string, list tail to list head.
-    fn push_to_string(s: &mut String);
-}
-
-unsafe impl DimensionList for DimensionNil {
-    fn push_to_string(_: &mut String) {}
-}
-
-unsafe impl<A: DimensionList, const N: usize> DimensionList for Dimension<A, N> {
-    fn push_to_string(s: &mut String) {
-        use std::fmt::Write;
-        A::push_to_string(s);
-        write!(s, "[{}]", N).unwrap();
-    }
-}
 
 /// Trait for types that have a GLSL equivalent. Useful for generating GLSL code
 /// from Rust structs.
@@ -36,12 +9,24 @@ pub unsafe trait Glsl {
     const NAME: &'static str;
 }
 
+/// A field contained within a GLSL struct definition.
+pub struct GlslField {
+    /// The type of the field, like `vec2` or `mat3`.
+    pub ty: &'static str,
+
+    /// The field's name. This must be a valid GLSL identifier.
+    pub name: &'static str,
+
+    /// The field's array dimensions. This is a string of the form "[1][2]..."
+    pub dim: &'static str,
+}
+
 /// Trait for types that can be represented as a struct in GLSL.
 ///
 /// This trait should not generally be implemented by hand, but can be derived.
 pub unsafe trait GlslStruct: Glsl {
     /// The fields contained in this struct.
-    fn enumerate_fields(s: &mut String);
+    const FIELDS: &'static [GlslField];
 
     /// Generates GLSL code that represents this struct and its fields.
     fn glsl_definition() -> String {
@@ -50,24 +35,18 @@ pub unsafe trait GlslStruct: Glsl {
         output.push_str(Self::NAME);
         output.push_str(" {\n");
 
-        Self::enumerate_fields(&mut output);
+        for field in Self::FIELDS {
+            output.push('\t');
+            output.push_str(field.ty);
+            output.push(' ');
+            output.push_str(field.name);
+            output.push_str(field.dim);
+            output.push_str(";\n");
+        }
 
         output.push_str("};");
         output
     }
-}
-
-/// Trait for types that are expressible as a GLSL type with (possibly zero) array dimensions.
-pub unsafe trait GlslArray {
-    /// Base type name.
-    const NAME: &'static str;
-    /// Type-level linked list of array dimensions, ordered outer to inner.
-    type ArraySize: DimensionList;
-}
-
-unsafe impl<T: Glsl> GlslArray for T {
-    const NAME: &'static str = <T as Glsl>::NAME;
-    type ArraySize = DimensionNil;
 }
 
 unsafe impl Glsl for f32 {
@@ -84,10 +63,4 @@ unsafe impl Glsl for i32 {
 
 unsafe impl Glsl for u32 {
     const NAME: &'static str = "uint";
-}
-
-unsafe impl<T: GlslArray, const N: usize> GlslArray for [T; N] {
-    const NAME: &'static str = T::NAME;
-
-    type ArraySize = Dimension<T::ArraySize, N>;
 }

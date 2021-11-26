@@ -1,6 +1,8 @@
 use proc_macro2::{Literal, TokenStream};
 use quote::quote;
-use syn::{parse_quote, Data, DeriveInput, Fields, Path};
+use syn::{parse_quote, Data, DeriveInput, Fields, Path, Type, Expr};
+#[cfg(feature = "arrays")]
+use syn::TypeArray;
 
 pub fn emit(input: DeriveInput) -> TokenStream {
     let fields = match &input.data {
@@ -22,16 +24,15 @@ pub fn emit(input: DeriveInput) -> TokenStream {
 
     let glsl_fields = fields.named.iter().map(|field| {
         let field_ty = &field.ty;
+        let (base_ty, array_suffix) = remove_array_layers(field_ty);
         let field_name_str = Literal::string(&field.ident.as_ref().unwrap().to_string());
-        let field_as = quote! {<#field_ty as ::crevice::glsl::GlslArray>};
 
         quote! {
-            s.push_str("\t");
-            s.push_str(#field_as::NAME);
-            s.push_str(" ");
-            s.push_str(#field_name_str);
-            <#field_as::ArraySize as ::crevice::glsl::DimensionList>::push_to_string(s);
-            s.push_str(";\n");
+            ::crevice::glsl::GlslField {
+                ty: <#base_ty as ::crevice::glsl::Glsl>::NAME,
+                name: #field_name_str,
+                dim: #array_suffix,
+            }
         }
     });
 
@@ -41,9 +42,29 @@ pub fn emit(input: DeriveInput) -> TokenStream {
         }
 
         unsafe impl #impl_generics #struct_trait_path for #name #ty_generics #where_clause {
-            fn enumerate_fields(s: &mut String) {
-                #( #glsl_fields )*
-            }
+            const FIELDS: &'static [::crevice::glsl::GlslField] = &[
+                #( #glsl_fields, )*
+            ];
         }
     }
+}
+
+#[cfg(feature = "arrays")]
+fn remove_array_layers(mut ty: &Type) -> (&Type, Expr) {
+    let mut suffix = quote!("");
+
+    loop {
+        match ty {
+            &Type::Array(TypeArray { ref elem, ref len, .. }) => {
+                ty = elem.as_ref();
+                suffix = quote!(::crevice::internal::const_format::concatcp!("[", (#len as usize), "]", #suffix));
+            }
+            _ => break,
+        }
+    }
+    (ty, Expr::Verbatim(suffix))
+}
+#[cfg(not(feature = "arrays"))]
+fn remove_array_layers(ty: &Type) -> (&Type, Expr) {
+    (ty, Expr::Verbatim(quote!("")))
 }

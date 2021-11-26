@@ -17,7 +17,7 @@ resolver = "2"
 [features]
 default = ["std"]
 std = []
-arrays = ["crevice-derive/arrays"]
+arrays = ["crevice-derive/arrays", "const_format"]
 
 [workspace]
 members = ["crevice-derive", "crevice-tests"]
@@ -25,6 +25,7 @@ default-members = ["crevice-derive", "crevice-tests"]
 
 [dependencies]
 crevice-derive = { version = "0.8.0", path = "crevice-derive" }
+const_format = {version = "0.2.22", optional = true}
 
 bytemuck = "1.4.1"
 mint = "0.5.8"

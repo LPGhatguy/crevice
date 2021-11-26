@@ -50,6 +50,7 @@ fn generate_struct_glsl() {
 }
 
 #[test]
+#[cfg(feature = "arrays")]
 fn generate_struct_array_glsl() {
     #[allow(dead_code)]
     #[derive(GlslStruct)]
