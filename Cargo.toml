@@ -17,6 +17,7 @@ resolver = "2"
 [features]
 default = ["std"]
 std = []
+arrays = ["crevice-derive/arrays"]
 
 [workspace]
 members = ["crevice-derive", "crevice-tests"]

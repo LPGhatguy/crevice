@@ -29,13 +29,6 @@ pub struct DynamicUniformStd140<T>(T);
 
 unsafe impl<T: Std140> Std140 for DynamicUniformStd140<T> {
     const ALIGNMENT: usize = max(256, T::ALIGNMENT);
-    #[cfg(const_evaluatable_checked)]
-    type Padded = crate::std140::Std140Padded<
-        Self,
-        { align_offset(core::mem::size_of::<T>(), max(256, T::ALIGNMENT)) },
-    >;
-    #[cfg(not(const_evaluatable_checked))]
-    type Padded = crate::std140::InvalidPadded;
 }
 
 unsafe impl<T: Zeroable> Zeroable for DynamicUniformStd140<T> {}

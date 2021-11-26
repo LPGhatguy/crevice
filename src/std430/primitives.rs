@@ -5,31 +5,26 @@ use bytemuck::{Pod, Zeroable};
 
 use crate::bool::Bool;
 use crate::glsl::Glsl;
-use crate::std430::{AsStd430, Std430, Std430Padded};
+use crate::std430::{AsStd430, Std430};
 
 unsafe impl Std430 for f32 {
     const ALIGNMENT: usize = 4;
-    type Padded = Self;
 }
 
 unsafe impl Std430 for f64 {
     const ALIGNMENT: usize = 8;
-    type Padded = Self;
 }
 
 unsafe impl Std430 for i32 {
     const ALIGNMENT: usize = 4;
-    type Padded = Self;
 }
 
 unsafe impl Std430 for u32 {
     const ALIGNMENT: usize = 4;
-    type Padded = Self;
 }
 
 unsafe impl Std430 for Bool {
     const ALIGNMENT: usize = 4;
-    type Padded = Self;
 }
 
 impl AsStd430 for bool {
@@ -64,7 +59,11 @@ macro_rules! vectors {
 
             unsafe impl Std430 for $name {
                 const ALIGNMENT: usize = $align;
-                type Padded = Std430Padded<Self, {align_offset(size_of::<$name>(), $align)}>;
+            }
+
+            #[cfg(feature = "arrays")]
+            unsafe impl super::Std430ArrayItem for $name {
+                type Padding = [u8; align_offset(size_of::<$name>(), $align)];
             }
 
             unsafe impl Glsl for $name {
@@ -120,7 +119,11 @@ macro_rules! matrices {
 
             unsafe impl Std430 for $name {
                 const ALIGNMENT: usize = $align;
-                type Padded = Std430Padded<Self, {align_offset(size_of::<$name>(), $align)}>;
+            }
+
+            #[cfg(feature = "arrays")]
+            unsafe impl super::Std430ArrayItem for $name {
+                type Padding = [u8; 0];
             }
 
             unsafe impl Glsl for $name {

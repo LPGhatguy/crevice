@@ -19,8 +19,8 @@ pub fn emit(
     let as_trait_method = format_ident!("as_{}", mod_name);
     let from_trait_method = format_ident!("from_{}", mod_name);
 
-    let padded_name = format_ident!("{}Padded", trait_name);
-    let padded_path: Path = parse_quote!(#mod_path::#padded_name);
+    let array_name = format_ident!("{}ArrayItem", trait_name);
+    let array_path: Path = parse_quote!(#mod_path::#array_name);
 
     let visibility = input.vis;
     let input_name = input.ident;
@@ -224,6 +224,16 @@ pub fn emit(
         quote!()
     };
 
+    let array_item_impl = if cfg!(feature = "arrays") {
+        quote! {
+            unsafe impl #impl_generics #array_path for #generated_name #ty_generics #where_clause {
+                type Padding = [u8; 0];
+            }
+        }
+    } else {
+        quote!()
+    };
+
     quote! {
         #pad_fn_impls
         #struct_definition
@@ -231,13 +241,11 @@ pub fn emit(
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
 
-        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+        unsafe impl #impl_generics #trait_path for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
-            type Padded = #padded_path<Self, {::crevice::internal::align_offset(
-                    ::core::mem::size_of::<#generated_name>(),
-                    #struct_alignment
-                )}>;
         }
+
+        #array_item_impl
 
         impl #impl_generics #as_trait_path for #input_name #ty_generics #where_clause {
             type Output = #generated_name;

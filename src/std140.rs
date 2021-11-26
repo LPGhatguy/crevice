@@ -7,6 +7,8 @@ mod sizer;
 mod traits;
 #[cfg(feature = "std")]
 mod writer;
+#[cfg(feature = "arrays")]
+mod arrays;
 
 pub use crate::bool::Bool;
 
@@ -16,5 +18,7 @@ pub use self::sizer::*;
 pub use self::traits::*;
 #[cfg(feature = "std")]
 pub use self::writer::*;
+#[cfg(feature = "arrays")]
+pub use self::arrays::Std140ArrayItem;
 
 pub use crevice_derive::AsStd140;

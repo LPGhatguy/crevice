@@ -5,6 +5,7 @@ edition = "2018"
 
 [features]
 wgpu-validation = ["wgpu", "naga", "futures"]
+arrays = ["crevice/arrays"]
 
 [dependencies]
 crevice = { path = ".." }

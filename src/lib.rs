@@ -150,7 +150,9 @@ Crevice supports Rust 1.52.1 and newer due to use of new `const fn` features.
 [glsl-layout]: https://github.com/rustgd/glsl-layout
 */
 
-#![deny(missing_docs)]
+#![cfg_attr(feature = "arrays", feature(generic_const_exprs))]
+
+//#![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[macro_use]

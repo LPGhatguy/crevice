@@ -344,6 +344,7 @@ fn bools_and_bool_vectors() {
 }
 
 #[test]
+#[cfg(feature = "arrays")]
 fn array_strides_small_value() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430)]
     struct ArrayOfSmallValues {
@@ -360,6 +361,7 @@ fn array_strides_small_value() {
 }
 
 #[test]
+#[cfg(feature = "arrays")]
 fn array_strides_vec3() {
     #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
     struct ArrayOfVector3 {
@@ -384,4 +386,26 @@ fn array_strides_vec3() {
             [0x60616263, 0x64656667, 0x68697071].into(),
         ],
     })
+}
+
+#[test]
+#[cfg(feature = "arrays")]
+fn array_of_custom_struct_works() {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
+    struct SomeStruct {
+        x: f32,
+    }
+
+    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
+    struct ArrayOfStructs {
+        inner: [SomeStruct; 4],
+    }
+
+    assert_std140!((size = 64, align = 16) ArrayOfStructs {
+        inner: 0,
+    });
+
+    assert_std430!((size = 16, align = 4) ArrayOfStructs {
+        inner: 0,
+    });
 }
