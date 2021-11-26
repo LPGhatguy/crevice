@@ -120,8 +120,6 @@ macro_rules! matrices {
 
             unsafe impl Std430 for $name {
                 const ALIGNMENT: usize = $align;
-                /// Matrices are technically arrays of primitives, and as such require pad at end.
-                const PAD_AT_END: bool = true;
                 type Padded = Std430Padded<Self, {align_offset(size_of::<$name>(), $align)}>;
             }
 

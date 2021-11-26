@@ -18,11 +18,6 @@ pub unsafe trait Std140: Copy + Zeroable + Pod {
     /// slices safe.
     const ALIGNMENT: usize;
 
-    /// Whether this type requires a padding at the end (ie, is a struct or an array
-    /// of primitives).
-    /// See <https://www.khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159>
-    /// (rule 4 and 9)
-    const PAD_AT_END: bool = false;
     /// Padded type (Std140Padded specialization)
     /// The usual implementation is
     /// type Padded = Std140Padded<Self, {align_offset(size_of::<Self>(), max(16, ALIGNMENT))}>;
@@ -72,7 +67,7 @@ impl<T: Std140> Std140Convertible<T> for InvalidPadded {
 }
 /**
 Trait implemented for all types that can be turned into `std140` values.
-*
+
 This trait can often be `#[derive]`'d instead of manually implementing it. Any
 struct which contains only fields that also implement `AsStd140` can derive
 `AsStd140`.

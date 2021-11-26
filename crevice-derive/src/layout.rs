@@ -53,14 +53,6 @@ pub fn emit(
         }
     };
 
-    // Gives an expression telling whether the type should have trailing padding
-    // at least equal to its alignment.
-    let layout_pad_at_end_of_ty = |ty: &Type| {
-        quote! {
-            <<#ty as #as_trait_path>::Output as #trait_path>::PAD_AT_END
-        }
-    };
-
     let field_alignments = fields.iter().map(|field| layout_alignment_of_ty(&field.ty));
     let struct_alignment = quote! {
         ::crevice::internal::max_arr([
@@ -103,15 +95,9 @@ pub fn emit(
         output.into_iter().collect::<TokenStream>()
     };
 
-    let pad_fn_impls: TokenStream = fields
-        .iter()
-        .enumerate()
-        .map(|(index, prev_field)| {
-            let pad_fn = &pad_fns[index];
-
+    let pad_fn_impls: TokenStream = pad_fns.iter().enumerate().map(
+        |(index, pad_fn)| {
             let starting_offset = offset_after_field(index);
-            let prev_field_has_end_padding = layout_pad_at_end_of_ty(&prev_field.ty);
-            let prev_field_alignment = layout_alignment_of_ty(&prev_field.ty);
 
             let next_field_or_self_alignment = fields
                 .get(index + 1)
@@ -128,21 +114,10 @@ pub fn emit(
                     // alignment we are.
                     let starting_offset = #starting_offset;
 
-                    // If the previous field is a struct or array, we must align
-                    // the next field to at least THAT field's alignment.
-                    let min_alignment = if #prev_field_has_end_padding {
-                        #prev_field_alignment
-                    } else {
-                        0
-                    };
-
                     // We set our target alignment to the larger of the
                     // alignment due to the previous field and the alignment
                     // requirement of the next field.
-                    let alignment = ::crevice::internal::max(
-                        #next_field_or_self_alignment,
-                        min_alignment,
-                    );
+                    let alignment = #next_field_or_self_alignment;
 
                     // Using everything we've got, compute our padding amount.
                     ::crevice::internal::align_offset(starting_offset, alignment)
@@ -258,7 +233,6 @@ pub fn emit(
 
         unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
-            const PAD_AT_END: bool = true;
             type Padded = #padded_path<Self, {::crevice::internal::align_offset(
                     ::core::mem::size_of::<#generated_name>(),
                     #struct_alignment
