@@ -19,8 +19,8 @@ default = ["std"]
 std = []
 
 [workspace]
-members = ["crevice-derive", "crevice-tests"]
-default-members = ["crevice-derive", "crevice-tests"]
+members = [".", "crevice-derive", "crevice-tests"]
+default-members = [".", "crevice-derive", "crevice-tests"]
 
 [dependencies]
 crevice-derive = { version = "0.8.0", path = "crevice-derive" }
