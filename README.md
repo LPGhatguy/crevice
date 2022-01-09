@@ -55,7 +55,7 @@ use crevice::std140::{AsStd140, Std140};
 #[derive(AsStd140)]
 struct MainUniform {
     orientation: mint::ColumnMatrix3<f32>,
-    position: mint::Vector3<f32>,
+    position: mint::Point3<f32>,
     scale: f32,
 }
 
@@ -97,7 +97,7 @@ use crevice::std140::{self, AsStd140};
 
 #[derive(AsStd140)]
 struct PointLight {
-    position: mint::Vector3<f32>,
+    position: mint::Point3<f32>,
     color: mint::Vector3<f32>,
     brightness: f32,
 }
