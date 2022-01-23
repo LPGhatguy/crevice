@@ -259,7 +259,7 @@ pub fn emit(
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
 
-        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+        unsafe impl #impl_generics #trait_path for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
             const PAD_AT_END: bool = true;
         }
