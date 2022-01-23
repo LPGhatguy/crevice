@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 * Added correct support for bool-based types. ([#39])
+* Added `.as_bytes()` to generated output types, making it unnecessary to import
+`Std140` or `Std430` in typical concrete code.
 
 [#39]: https://github.com/LPGhatguy/crevice/pull/39
 
