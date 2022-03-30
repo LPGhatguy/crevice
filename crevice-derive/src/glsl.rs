@@ -1,6 +1,8 @@
 use proc_macro2::{Literal, TokenStream};
 use quote::quote;
-use syn::{parse_quote, Data, DeriveInput, Fields, Path};
+#[cfg(feature = "arrays")]
+use syn::TypeArray;
+use syn::{parse_quote, Data, DeriveInput, Expr, Fields, Path, Type};
 
 pub fn emit(input: DeriveInput) -> TokenStream {
     let fields = match &input.data {
@@ -22,12 +24,14 @@ pub fn emit(input: DeriveInput) -> TokenStream {
 
     let glsl_fields = fields.named.iter().map(|field| {
         let field_ty = &field.ty;
+        let (base_ty, array_suffix) = remove_array_layers(field_ty);
         let field_name_str = Literal::string(&field.ident.as_ref().unwrap().to_string());
 
         quote! {
             ::crevice::glsl::GlslField {
-                ty: <#field_ty as ::crevice::glsl::Glsl>::NAME,
+                ty: <#base_ty as ::crevice::glsl::Glsl>::NAME,
                 name: #field_name_str,
+                dim: #array_suffix,
             }
         }
     });
@@ -43,4 +47,28 @@ pub fn emit(input: DeriveInput) -> TokenStream {
             ];
         }
     }
+}
+
+#[cfg(feature = "arrays")]
+fn remove_array_layers(mut ty: &Type) -> (&Type, Expr) {
+    let mut suffix = quote!("");
+
+    loop {
+        match ty {
+            &Type::Array(TypeArray {
+                ref elem, ref len, ..
+            }) => {
+                ty = elem.as_ref();
+                suffix = quote!(
+                    ::crevice::internal::const_format::concatcp!("[", (#len as usize), "]", #suffix)
+                );
+            }
+            _ => break,
+        }
+    }
+    (ty, Expr::Verbatim(suffix))
+}
+#[cfg(not(feature = "arrays"))]
+fn remove_array_layers(ty: &Type) -> (&Type, Expr) {
+    (ty, Expr::Verbatim(quote!("")))
 }

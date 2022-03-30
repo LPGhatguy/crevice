@@ -38,3 +38,6 @@ pub const fn max_arr<const N: usize>(input: [usize; N]) -> usize {
 
     max
 }
+
+#[cfg(feature = "arrays")]
+pub use const_format;

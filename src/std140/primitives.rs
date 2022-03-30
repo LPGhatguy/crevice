@@ -1,7 +1,12 @@
+#[cfg(feature = "arrays")]
+use core::mem::size_of;
+
 use bytemuck::{Pod, Zeroable};
 
 use crate::bool::Bool;
 use crate::glsl::Glsl;
+#[cfg(feature = "arrays")]
+use crate::internal::{align_offset, max};
 use crate::std140::{AsStd140, Std140};
 
 unsafe impl Std140 for f32 {
@@ -58,6 +63,11 @@ macro_rules! vectors {
                 const ALIGNMENT: usize = $align;
             }
 
+            #[cfg(feature = "arrays")]
+            unsafe impl super::Std140ArrayItem for $name {
+                type Padding = [u8; align_offset(size_of::<$name>(), max(16, $align))];
+            }
+
             unsafe impl Glsl for $name {
                 const NAME: &'static str = stringify!($glsl_name);
             }
@@ -111,8 +121,11 @@ macro_rules! matrices {
 
             unsafe impl Std140 for $name {
                 const ALIGNMENT: usize = $align;
-                /// Matrices are technically arrays of primitives, and as such require pad at end.
-                const PAD_AT_END: bool = true;
+            }
+
+            #[cfg(feature = "arrays")]
+            unsafe impl super::Std140ArrayItem for $name {
+                type Padding = [u8; 0];
             }
 
             unsafe impl Glsl for $name {

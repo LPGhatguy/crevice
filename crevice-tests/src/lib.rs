@@ -342,3 +342,70 @@ fn bools_and_bool_vectors() {
         y: 8,
     });
 }
+
+#[test]
+#[cfg(feature = "arrays")]
+fn array_strides_small_value() {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
+    struct ArrayOfSmallValues {
+        inner: [f32; 4],
+    }
+
+    assert_std140!((size = 64, align = 16) ArrayOfSmallValues {
+        inner: 0,
+    });
+
+    assert_std430!((size = 16, align = 4) ArrayOfSmallValues {
+        inner: 0,
+    });
+}
+
+#[test]
+#[cfg(feature = "arrays")]
+fn array_strides_vec3() {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430, GlslStruct)]
+    struct ArrayOfVector3 {
+        inner: [Vector3<u32>; 6],
+    }
+
+    assert_std140!((size = 96, align = 16) ArrayOfVector3 {
+        inner: 0,
+    });
+
+    assert_std430!((size = 96, align = 16) ArrayOfVector3 {
+        inner: 0,
+    });
+
+    test_round_trip_struct(ArrayOfVector3 {
+        inner: [
+            [0x00010203, 0x04050607, 0x08091011].into(),
+            [0x12131415, 0x16171819, 0x20212223].into(),
+            [0x24252627, 0x28293031, 0x32333435].into(),
+            [0x36373839, 0x40414243, 0x44454647].into(),
+            [0x48495051, 0x52535455, 0x56575859].into(),
+            [0x60616263, 0x64656667, 0x68697071].into(),
+        ],
+    })
+}
+
+#[test]
+#[cfg(feature = "arrays")]
+fn array_of_custom_struct_works() {
+    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
+    struct SomeStruct {
+        x: f32,
+    }
+
+    #[derive(Debug, PartialEq, AsStd140, AsStd430)]
+    struct ArrayOfStructs {
+        inner: [SomeStruct; 4],
+    }
+
+    assert_std140!((size = 64, align = 16) ArrayOfStructs {
+        inner: 0,
+    });
+
+    assert_std430!((size = 16, align = 4) ArrayOfStructs {
+        inner: 0,
+    });
+}

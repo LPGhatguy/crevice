@@ -19,6 +19,9 @@ pub fn emit(
     let as_trait_method = format_ident!("as_{}", mod_name);
     let from_trait_method = format_ident!("from_{}", mod_name);
 
+    let array_name = format_ident!("{}ArrayItem", trait_name);
+    let array_path: Path = parse_quote!(#mod_path::#array_name);
+
     let visibility = input.vis;
     let input_name = input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
@@ -47,14 +50,6 @@ pub fn emit(
     let layout_alignment_of_ty = |ty: &Type| {
         quote! {
             <<#ty as #as_trait_path>::Output as #trait_path>::ALIGNMENT
-        }
-    };
-
-    // Gives an expression telling whether the type should have trailing padding
-    // at least equal to its alignment.
-    let layout_pad_at_end_of_ty = |ty: &Type| {
-        quote! {
-            <<#ty as #as_trait_path>::Output as #trait_path>::PAD_AT_END
         }
     };
 
@@ -100,15 +95,11 @@ pub fn emit(
         output.into_iter().collect::<TokenStream>()
     };
 
-    let pad_fn_impls: TokenStream = fields
+    let pad_fn_impls: TokenStream = pad_fns
         .iter()
         .enumerate()
-        .map(|(index, prev_field)| {
-            let pad_fn = &pad_fns[index];
-
+        .map(|(index, pad_fn)| {
             let starting_offset = offset_after_field(index);
-            let prev_field_has_end_padding = layout_pad_at_end_of_ty(&prev_field.ty);
-            let prev_field_alignment = layout_alignment_of_ty(&prev_field.ty);
 
             let next_field_or_self_alignment = fields
                 .get(index + 1)
@@ -125,21 +116,10 @@ pub fn emit(
                     // alignment we are.
                     let starting_offset = #starting_offset;
 
-                    // If the previous field is a struct or array, we must align
-                    // the next field to at least THAT field's alignment.
-                    let min_alignment = if #prev_field_has_end_padding {
-                        #prev_field_alignment
-                    } else {
-                        0
-                    };
-
                     // We set our target alignment to the larger of the
                     // alignment due to the previous field and the alignment
                     // requirement of the next field.
-                    let alignment = ::crevice::internal::max(
-                        #next_field_or_self_alignment,
-                        min_alignment,
-                    );
+                    let alignment = #next_field_or_self_alignment;
 
                     // Using everything we've got, compute our padding amount.
                     ::crevice::internal::align_offset(starting_offset, alignment)
@@ -246,6 +226,16 @@ pub fn emit(
         quote!()
     };
 
+    let array_item_impl = if cfg!(feature = "arrays") {
+        quote! {
+            unsafe impl #impl_generics #array_path for #generated_name #ty_generics #where_clause {
+                type Padding = [u8; 0];
+            }
+        }
+    } else {
+        quote!()
+    };
+
     quote! {
         #pad_fn_impls
         #struct_definition
@@ -253,10 +243,11 @@ pub fn emit(
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
 
-        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+        unsafe impl #impl_generics #trait_path for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
-            const PAD_AT_END: bool = true;
         }
+
+        #array_item_impl
 
         impl #impl_generics #as_trait_path for #input_name #ty_generics #where_clause {
             type Output = #generated_name;

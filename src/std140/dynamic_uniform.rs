@@ -1,6 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::internal::max;
+#[allow(unused_imports)]
+use crate::internal::{align_offset, max};
 use crate::std140::{AsStd140, Std140};
 
 /// Wrapper type that aligns the inner type to at least 256 bytes.

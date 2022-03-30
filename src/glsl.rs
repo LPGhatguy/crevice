@@ -47,6 +47,9 @@ pub struct GlslField {
 
     /// The field's name. This must be a valid GLSL identifier.
     pub name: &'static str,
+
+    /// The field's array dimensions. This is a string of the form "[1][2]..."
+    pub dim: &'static str,
 }
 
 /// Trait for types that can be represented as a struct in GLSL.
@@ -68,6 +71,7 @@ pub unsafe trait GlslStruct: Glsl {
             output.push_str(field.ty);
             output.push(' ');
             output.push_str(field.name);
+            output.push_str(field.dim);
             output.push_str(";\n");
         }
 

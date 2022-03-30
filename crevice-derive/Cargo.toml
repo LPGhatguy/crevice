@@ -15,6 +15,9 @@ default = []
 # Enable methods that let you introspect into the generated structs.
 debug-methods = []
 
+# Enable arrays support
+arrays = []
+
 [lib]
 proc-macro = true
 
