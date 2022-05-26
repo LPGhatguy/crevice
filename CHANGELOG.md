@@ -1,7 +1,17 @@
 # Crevice Changelog
 
 ## Unreleased Changes
-* Added `.as_bytes()` to generated output types, making it unnecessary to import
+* Removed the now-obsolete `PAD_AT_END` associated value. ([#43])
+* Added support for `Point` types from mint and all supported math libraries. ([#47])
+* Added `as_bytes` to generated types, reducing the need to import traits. ([#48])
+* Fixed `WriteStd430` on arrays writing the first element twice. ([#46])
+* Fixed no_std build and drastically improved Crevice's CI pipeline. ([#54])
+
+[#43]: https://github.com/LPGhatguy/crevice/pull/43
+[#46]: https://github.com/LPGhatguy/crevice/pull/46
+[#47]: https://github.com/LPGhatguy/crevice/pull/47
+[#48]: https://github.com/LPGhatguy/crevice/pull/48
+[#54]: https://github.com/LPGhatguy/crevice/pull/54
 
 ## [0.9.0] - 2022-05-26
 * Added correct support for bool-based types. ([#39])
