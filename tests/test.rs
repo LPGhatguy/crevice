@@ -38,6 +38,7 @@ fn there_and_back_again() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn generate_struct_glsl() {
     #[allow(dead_code)]
     #[derive(GlslStruct)]

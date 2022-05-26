@@ -34,3 +34,6 @@ nalgebra = { version = "0.31.0", features = ["mint"], optional = true }
 
 [dev-dependencies]
 insta = "0.16.1"
+
+[package.metadata."docs.rs"]
+all-features = true

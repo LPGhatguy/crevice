@@ -12,34 +12,71 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
+      fail-fast: false
       matrix:
-        rust_version: [stable, "1.52.1"]
+        include:
+          - label: Stable
+            rust_version: stable
+          - label: MSRV
+            rust_version: 1.52.1
+          - label: Stable (All Features)
+            rust_version: stable
+            flags: --all-features
+          - label: Stable (no_std)
+            rust_version: stable
+            flags: --no-default-features
+
+    name: ${{ matrix.label }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-    - name: Setup Rust toolchain
-      run: rustup default ${{ matrix.rust_version }}
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust_version }}
+        override: true
+        profile: minimal
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose ${{ matrix.flags }}
 
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose ${{ matrix.flags }}
 
-    - name: Rustfmt and Clippy
-      run: |
-        cargo fmt -- --check
-        cargo clippy --all-features
-      if: matrix.rust_version == 'stable'
+  lint:
+    name: Rustfmt and Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
+
+    - name: Rustfmt
+      run: cargo fmt -- --check
+
+    - name: Clippy
+      run: cargo clippy --all-features
 
   wgpu-validation:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        profile: minimal
 
     - name: Run Validation Tests
-      run: cargo test --all-features --no-fail-fast --verbose
+      run: cargo test --package crevice-tests --features wgpu-validation --no-fail-fast --verbose

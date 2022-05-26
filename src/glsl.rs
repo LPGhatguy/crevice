@@ -52,6 +52,7 @@ pub struct GlslField {
 /// Trait for types that can be represented as a struct in GLSL.
 ///
 /// This trait should not generally be implemented by hand, but can be derived.
+#[cfg(feature = "std")]
 pub unsafe trait GlslStruct: Glsl {
     /// The fields contained in this struct.
     const FIELDS: &'static [GlslField];
