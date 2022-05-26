@@ -1,4 +1,3 @@
-use crevice::glsl::GlslStruct;
 use crevice::std140::AsStd140;
 
 #[test]
@@ -40,6 +39,8 @@ fn there_and_back_again() {
 #[test]
 #[cfg(feature = "std")]
 fn generate_struct_glsl() {
+    use crevice::glsl::GlslStruct;
+
     #[allow(dead_code)]
     #[derive(GlslStruct)]
     struct TestGlsl {

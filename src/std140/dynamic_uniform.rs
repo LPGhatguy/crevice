@@ -37,7 +37,7 @@ unsafe impl<T: Pod> Pod for DynamicUniformStd140<T> {}
 mod test {
     use super::*;
 
-    use crate::std140::{self, AsStd140};
+    use crate::std140::AsStd140;
 
     #[test]
     fn size_is_unchanged() {
@@ -50,6 +50,8 @@ mod test {
     #[test]
     #[cfg(feature = "std")]
     fn alignment_applies() {
+        use crate::std140;
+
         let mut output = Vec::new();
         let mut writer = std140::Writer::new(&mut output);
 
