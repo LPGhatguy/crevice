@@ -36,7 +36,7 @@ use crevice::std430::{self, AsStd430};
 
 #[derive(AsStd430)]
 struct PointLight {
-    position: mint::Vector3<f32>,
+    position: mint::Point3<f32>,
     color: mint::Vector3<f32>,
     brightness: f32,
 }
