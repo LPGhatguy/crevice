@@ -1,10 +1,13 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## [0.9.0] - 2022-05-26
 * Added correct support for bool-based types. ([#39])
 * Updated to glam 0.20 and nalgebra 0.31.
 
 [#39]: https://github.com/LPGhatguy/crevice/pull/39
+[0.9.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.9.0
 
 ## [0.8.0] - 2021-10-26
 * Added support for many math libraries directly: ([#37])
