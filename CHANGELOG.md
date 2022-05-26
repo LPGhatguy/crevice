@@ -1,6 +1,8 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## [0.10.0] - 2022-05-26
 * Removed the now-obsolete `PAD_AT_END` associated value. ([#43])
 * Added support for `Point` types from mint and all supported math libraries. ([#47])
 * Added `as_bytes` to generated types, reducing the need to import traits. ([#48])
@@ -12,6 +14,7 @@
 [#47]: https://github.com/LPGhatguy/crevice/pull/47
 [#48]: https://github.com/LPGhatguy/crevice/pull/48
 [#54]: https://github.com/LPGhatguy/crevice/pull/54
+[0.10.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.10.0
 
 ## [0.9.0] - 2022-05-26
 * Added correct support for bool-based types. ([#39])
