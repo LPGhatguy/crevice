@@ -22,7 +22,7 @@ jobs:
             rust_version: 1.52.1
           - label: Stable (All Features)
             rust_version: stable
-            flags: --all-features
+            flags: --features test-all-math-libraries
           - label: Stable (no_std)
             rust_version: stable
             flags: --no-default-features
