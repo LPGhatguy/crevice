@@ -111,8 +111,6 @@ macro_rules! matrices {
 
             unsafe impl Std430 for $name {
                 const ALIGNMENT: usize = $align;
-                /// Matrices are technically arrays of primitives, and as such require pad at end.
-                const PAD_AT_END: bool = true;
             }
 
             unsafe impl Glsl for $name {
