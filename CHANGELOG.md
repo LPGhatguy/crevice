@@ -1,6 +1,7 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+* Added `.as_bytes()` to generated output types, making it unnecessary to import
 
 ## [0.9.0] - 2022-05-26
 * Added correct support for bool-based types. ([#39])

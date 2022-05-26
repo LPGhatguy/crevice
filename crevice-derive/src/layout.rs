@@ -250,10 +250,16 @@ pub fn emit(
         #pad_fn_impls
         #struct_definition
 
+        impl #impl_generics #generated_name #ty_generics #where_clause {
+            pub fn as_bytes(&self) -> &[u8] {
+                <#generated_name #ty_generics as #trait_path>::as_bytes(self)
+            }
+        }
+
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Zeroable for #generated_name #ty_generics #where_clause {}
         unsafe impl #impl_generics ::crevice::internal::bytemuck::Pod for #generated_name #ty_generics #where_clause {}
 
-        unsafe impl #impl_generics #mod_path::#trait_name for #generated_name #ty_generics #where_clause {
+        unsafe impl #impl_generics #trait_path for #generated_name #ty_generics #where_clause {
             const ALIGNMENT: usize = #struct_alignment;
             const PAD_AT_END: bool = true;
         }

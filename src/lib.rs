@@ -49,7 +49,7 @@ uniform MAIN {
 ```
 
 ```rust
-use crevice::std140::{AsStd140, Std140};
+use crevice::std140::AsStd140;
 
 #[derive(AsStd140)]
 struct MainUniform {
