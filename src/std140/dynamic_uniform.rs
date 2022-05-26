@@ -37,17 +37,21 @@ unsafe impl<T: Pod> Pod for DynamicUniformStd140<T> {}
 mod test {
     use super::*;
 
-    use crate::std140::{self, WriteStd140};
+    use crate::std140::AsStd140;
 
     #[test]
     fn size_is_unchanged() {
-        let dynamic_f32 = DynamicUniform(0.0f32);
-
-        assert_eq!(dynamic_f32.std140_size(), 0.0f32.std140_size());
+        assert_eq!(
+            DynamicUniform::<f32>::std140_size_static(),
+            f32::std140_size_static()
+        );
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn alignment_applies() {
+        use crate::std140;
+
         let mut output = Vec::new();
         let mut writer = std140::Writer::new(&mut output);
 
