@@ -92,6 +92,10 @@ buffer POINT_LIGHTS {
 } point_lights;
 ```
 
+*/
+#![cfg_attr(
+    feature = "std",
+    doc = r##"
 ```rust
 use crevice::std140::{self, AsStd140};
 
@@ -135,6 +139,9 @@ unmap_gpu_buffer();
 
 # Ok::<(), std::io::Error>(())
 ```
+"##
+)]
+/*!
 
 ## Features
 
