@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 * Added correct support for bool-based types. ([#39])
+* Updated to glam 0.20 and nalgebra 0.31.
 
 [#39]: https://github.com/LPGhatguy/crevice/pull/39
 
