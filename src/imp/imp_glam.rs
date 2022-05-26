@@ -11,9 +11,9 @@ minty_impl! {
     mint::Vector3<u32> => glam::UVec3,
     mint::Vector4<u32> => glam::UVec4,
 
-    mint::Vector2<bool> => glam::BVec2,
-    mint::Vector3<bool> => glam::BVec3,
-    mint::Vector4<bool> => glam::BVec4,
+    // mint::Vector2<bool> => glam::BVec2,
+    // mint::Vector3<bool> => glam::BVec3,
+    // mint::Vector4<bool> => glam::BVec4,
 
     mint::Vector2<f64> => glam::DVec2,
     mint::Vector3<f64> => glam::DVec3,

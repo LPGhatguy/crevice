@@ -4,10 +4,12 @@ version = "0.1.0"
 edition = "2018"
 
 [features]
-wgpu-validation = ["wgpu", "naga", "futures"]
+default = ["std"]
+std = ["crevice/std"]
+wgpu-validation = ["std", "wgpu", "naga", "futures"]
 
 [dependencies]
-crevice = { path = ".." }
+crevice = { path = "..", default-features = false }
 crevice-derive = { path = "../crevice-derive", features = ["debug-methods"] }
 
 anyhow = "1.0.44"
