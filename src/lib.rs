@@ -19,8 +19,8 @@ other math libraries by use of the mint crate. Crevice currently supports:
 
 * mint 0.5, enabled by default
 * cgmath 0.18, using the `cgmath` feature
-* nalgebra 0.29, using the `nalgebra` feature
-* glam 0.19, using the `glam` feature
+* nalgebra 0.31, using the `nalgebra` feature
+* glam 0.20, using the `glam` feature
 
 PRs are welcome to add or update math libraries to Crevice.
 
@@ -92,6 +92,10 @@ buffer POINT_LIGHTS {
 } point_lights;
 ```
 
+*/
+#![cfg_attr(
+    feature = "std",
+    doc = r##"
 ```rust
 use crevice::std140::{self, AsStd140};
 
@@ -135,6 +139,9 @@ unmap_gpu_buffer();
 
 # Ok::<(), std::io::Error>(())
 ```
+"##
+)]
+/*!
 
 ## Features
 

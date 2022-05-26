@@ -6,7 +6,10 @@ should implement [`GlslStruct`], which can be derived.
 
 ## Examples
 Given this struct:
-
+*/
+#![cfg_attr(
+    feature = "std",
+    doc = r##"
 ```rust
 use mint::{ColumnMatrix4, Vector3};
 use crevice::glsl::GlslStruct;
@@ -20,7 +23,9 @@ struct SpotLight {
 
 println!("{}", SpotLight::glsl_definition());
 ```
-
+"##
+)]
+/*!
 The output will be:
 ```glsl
 struct SpotLight {
@@ -52,6 +57,7 @@ pub struct GlslField {
 /// Trait for types that can be represented as a struct in GLSL.
 ///
 /// This trait should not generally be implemented by hand, but can be derived.
+#[cfg(feature = "std")]
 pub unsafe trait GlslStruct: Glsl {
     /// The fields contained in this struct.
     const FIELDS: &'static [GlslField];
