@@ -2,6 +2,11 @@
 
 ## Unreleased Changes
 
+## [0.11.0] - 2022-07-01
+* Upgraded to glam 0.21.
+
+[0.11.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.11.0
+
 ## [0.10.0] - 2022-05-26
 * Removed the now-obsolete `PAD_AT_END` associated value. ([#43])
 * Added support for `Point` types from mint and all supported math libraries. ([#47])
