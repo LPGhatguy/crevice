@@ -50,7 +50,7 @@ uniform MAIN {
 ```
 
 ```rust
-use crevice::std140::{AsStd140, Std140};
+use crevice::std140::AsStd140;
 
 #[derive(AsStd140)]
 struct MainUniform {
@@ -140,7 +140,7 @@ unmap_gpu_buffer();
 
 ### Minimum Supported Rust Version (MSRV)
 
-Crevice supports Rust 1.52.1 and newer due to use of new `const fn` features.
+Crevice supports Rust 1.58.0 and newer due to use of new `const fn` features.
 
 [glsl-layout]: https://github.com/rustgd/glsl-layout
 

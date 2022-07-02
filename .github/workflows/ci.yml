@@ -19,7 +19,7 @@ jobs:
           - label: Stable
             rust_version: stable
           - label: MSRV
-            rust_version: 1.52.1
+            rust_version: 1.58.0
           - label: Stable (All Features)
             rust_version: stable
             flags: --features test-all-math-libraries
