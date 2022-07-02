@@ -2,7 +2,8 @@
 name = "crevice"
 description = "Create GLSL-compatible versions of structs with explicitly-initialized padding"
 version = "0.10.0"
-edition = "2018"
+rust-version = "1.58.0"
+edition = "2021"
 authors = ["Lucien Greathouse <me@lpghatguy.com>"]
 documentation = "https://docs.rs/crevice"
 homepage = "https://github.com/LPGhatguy/crevice"
