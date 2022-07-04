@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::fmt::Debug;
+use std::fmt::{Debug, Write};
 use std::marker::PhantomData;
 
 use crevice::glsl::{Glsl, GlslStruct};
@@ -21,7 +21,7 @@ layout({layout}, set = 0, binding = 1) buffer OUTPUT {
 };
 
 void main() {
-    out_data = in_data;
+    {struct_copy}
 }";
 
 pub fn test_round_trip_struct<T: Debug + PartialEq + AsStd140 + AsStd430 + GlslStruct>(value: T) {
@@ -46,13 +46,30 @@ fn glsl_shader_for_struct<T: GlslStruct>(layout: &str) -> String {
     BASE_SHADER
         .replace("{struct_name}", T::NAME)
         .replace("{struct_definition}", &T::glsl_definition())
+        .replace("{struct_copy}", &struct_copy::<T>())
         .replace("{layout}", layout)
+}
+
+fn struct_copy<T: GlslStruct>() -> String {
+    let mut output = String::new();
+
+    for field in T::FIELDS {
+        writeln!(
+            output,
+            "out_data.{name} = in_data.{name};",
+            name = field.name
+        )
+        .unwrap();
+    }
+
+    output
 }
 
 fn glsl_shader_for_primitive<T: Glsl>(layout: &str) -> String {
     BASE_SHADER
         .replace("{struct_name}", T::NAME)
         .replace("{struct_definition}", "")
+        .replace("{struct_copy}", "out_data = in_data;\n")
         .replace("{layout}", layout)
 }
 
