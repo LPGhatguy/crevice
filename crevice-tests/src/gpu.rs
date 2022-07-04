@@ -160,7 +160,7 @@ where
 
         let cs_module = self
             .device
-            .create_shader_module(&wgpu::ShaderModuleDescriptor {
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: None,
                 source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(shader)),
             });
@@ -199,7 +199,7 @@ where
                 encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             cpass.set_pipeline(&compute_pipeline);
             cpass.set_bind_group(0, &bind_group, &[]);
-            cpass.dispatch(1, 1, 1);
+            cpass.dispatch_workgroups(1, 1, 1);
         }
 
         encoder.copy_buffer_to_buffer(
@@ -213,11 +213,11 @@ where
         self.queue.submit(std::iter::once(encoder.finish()));
 
         let output_slice = output_cpu_buffer.slice(..);
-        let output_future = output_slice.map_async(wgpu::MapMode::Read);
+        output_slice.map_async(wgpu::MapMode::Read, |res| {
+            res.unwrap();
+        });
 
         self.device.poll(wgpu::Maintain::Wait);
-        block_on(output_future).unwrap();
-
         let output = output_slice.get_mapped_range().to_vec();
         output_cpu_buffer.unmap();
 
@@ -262,7 +262,11 @@ fn compile(glsl_source: &str) -> anyhow::Result<String> {
     )
     .validate(&module)?;
 
-    let wgsl = naga::back::wgsl::write_string(&module, &info)?;
+    let wgsl = naga::back::wgsl::write_string(
+        &module,
+        &info,
+        naga::back::wgsl::WriterFlags::EXPLICIT_TYPES,
+    )?;
 
     Ok(wgsl)
 }
