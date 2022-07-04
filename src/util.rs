@@ -3,6 +3,7 @@
 macro_rules! easy_impl {
     ( $( $std_name:ident $imp_ty:ty { $($field:ident),* }, )* ) => {
         $(
+            #[allow(clippy::needless_update)]
             impl crate::std140::AsStd140 for $imp_ty {
                 type Output = crate::std140::$std_name;
 
@@ -26,6 +27,7 @@ macro_rules! easy_impl {
                 }
             }
 
+            #[allow(clippy::needless_update)]
             impl crate::std430::AsStd430 for $imp_ty {
                 type Output = crate::std430::$std_name;
 
