@@ -2,6 +2,11 @@
 
 ## Unreleased Changes
 
+## [0.12.0] - 2022-11-09
+* Upgraded to glam 0.22.
+
+[0.12.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.12.0
+
 ## [0.11.0] - 2022-07-01
 * Upgraded to glam 0.21.
 
