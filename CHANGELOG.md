@@ -1,8 +1,12 @@
 # Crevice Changelog
 
 ## Unreleased Changes
+
+## [0.14.0] - 2023-09-08
 * Upgraded to glam 0.24.
 * Upgraded to nalgebra 0.32.
+
+[0.14.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.14.0
 
 ## [0.13.0] - 2023-03-20
 * Upgraded to glam 0.23.
