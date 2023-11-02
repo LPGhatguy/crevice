@@ -18,7 +18,7 @@ resolver = "2"
 [features]
 default = ["std"]
 std = []
-test-all-math-libraries = ["cgmath", "glam", "nalgebra"]
+test-all-math-libraries = ["cgmath", "glam", "glam/std", "nalgebra"]
 
 [workspace]
 members = [".", "crevice-derive", "crevice-tests"]
