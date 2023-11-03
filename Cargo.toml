@@ -18,7 +18,7 @@ resolver = "2"
 [features]
 default = ["std"]
 std = []
-test-all-math-libraries = ["cgmath", "glam", "nalgebra"]
+test-all-math-libraries = ["cgmath", "glam", "glam/std", "nalgebra"]
 
 [workspace]
 members = [".", "crevice-derive", "crevice-tests"]
@@ -30,9 +30,9 @@ crevice-derive = { version = "0.10.0", path = "crevice-derive" }
 bytemuck = "1.12.3"
 mint = "0.5.9"
 
-cgmath = { version = "0.18.0", optional = true }
-glam = { version = "^0.24", features = ["mint"], optional = true }
-nalgebra = { version = "0.32.3", features = ["mint"], optional = true }
+cgmath = { version = "0.18.0", default-features = false, optional = true }
+glam = { version = "^0.24", default-features = false, features = ["mint"], optional = true }
+nalgebra = { version = "0.32.3", default-features = false, features = ["mint"], optional = true }
 
 [dev-dependencies]
 insta = "1.21.0"
