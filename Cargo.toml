@@ -31,7 +31,7 @@ bytemuck = "1.12.3"
 mint = "0.5.9"
 
 cgmath = { version = "0.18.0", default-features = false, optional = true }
-glam = { version = "^0.24", default-features = false, features = ["mint"], optional = true }
+glam = { version = "^0.25", default-features = false, features = ["mint"], optional = true }
 nalgebra = { version = "0.32.3", default-features = false, features = ["mint"], optional = true }
 
 [dev-dependencies]
