@@ -2,11 +2,15 @@
 
 ## Unreleased Changes
 
-## [0.15.0] - 2024-03-16
+## [0.16.0] - 2024-05-06
+* Upgraded to glam 0.27.
+
+[0.16.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.16.0
+
+## 0.15.0 - 2024-03-16
 * Fixed usage in no-std environments when using math library features ([#61])
 * Upgraded to glam 0.25.
 
-[0.15.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.15.0
 [#61]: https://github.com/LPGhatguy/crevice/pull/61
 
 ## [0.14.0] - 2023-09-08
