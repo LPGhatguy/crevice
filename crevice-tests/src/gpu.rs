@@ -189,6 +189,8 @@ where
                     layout: None,
                     module: &cs_module,
                     entry_point: "main",
+                    cache: None,
+                    compilation_options: Default::default(),
                 });
 
         let bind_group_layout = compute_pipeline.get_bind_group_layout(0);
@@ -212,8 +214,7 @@ where
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
-            let mut cpass =
-                encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
+            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor::default());
             cpass.set_pipeline(&compute_pipeline);
             cpass.set_bind_group(0, &bind_group, &[]);
             cpass.dispatch_workgroups(1, 1, 1);
@@ -243,7 +244,7 @@ where
 }
 
 fn setup() -> (wgpu::Device, wgpu::Queue) {
-    let instance = wgpu::Instance::new(wgpu::Backends::all());
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::default());
     let adapter =
         block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).unwrap();
 
@@ -252,8 +253,9 @@ fn setup() -> (wgpu::Device, wgpu::Queue) {
     block_on(adapter.request_device(
         &wgpu::DeviceDescriptor {
             label: None,
-            features: wgpu::Features::empty(),
-            limits: wgpu::Limits::downlevel_defaults(),
+            required_features: wgpu::Features::empty(),
+            required_limits: wgpu::Limits::downlevel_defaults(),
+            memory_hints: wgpu::MemoryHints::Performance,
         },
         None,
     ))
@@ -261,7 +263,7 @@ fn setup() -> (wgpu::Device, wgpu::Queue) {
 }
 
 fn compile(glsl_source: &str) -> anyhow::Result<String> {
-    let mut parser = naga::front::glsl::Parser::default();
+    let mut parser = naga::front::glsl::Frontend::default();
 
     let module = parser
         .parse(
