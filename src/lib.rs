@@ -19,8 +19,8 @@ other math libraries by use of the mint crate. Crevice currently supports:
 
 * mint 0.5, enabled by default
 * cgmath 0.18, using the `cgmath` feature
-* nalgebra 0.31, using the `nalgebra` feature
-* glam 0.23, using the `glam` feature
+* nalgebra 0.33, using the `nalgebra` feature
+* glam 0.29, using the `glam` feature
 
 PRs are welcome to add or update math libraries to Crevice.
 

@@ -20,8 +20,8 @@ other math libraries by use of the mint crate. Crevice currently supports:
 
 * mint 0.5, enabled by default
 * cgmath 0.18, using the `cgmath` feature
-* nalgebra 0.31, using the `nalgebra` feature
-* glam 0.23, using the `glam` feature
+* nalgebra 0.33, using the `nalgebra` feature
+* glam 0.29, using the `glam` feature
 
 PRs are welcome to add or update math libraries to Crevice.
 
@@ -92,57 +92,6 @@ buffer POINT_LIGHTS {
 } point_lights;
 ```
 
-```rust
-use crevice::std140::{self, AsStd140};
-
-#[derive(AsStd140)]
-struct PointLight {
-    position: mint::Point3<f32>,
-    color: mint::Vector3<f32>,
-    brightness: f32,
-}
-
-let lights = vec![
-    PointLight {
-        position: [0.0, 1.0, 0.0].into(),
-        color: [1.0, 0.0, 0.0].into(),
-        brightness: 0.6,
-    },
-    PointLight {
-        position: [0.0, 4.0, 3.0].into(),
-        color: [1.0, 1.0, 1.0].into(),
-        brightness: 1.0,
-    },
-];
-
-let target_buffer = map_gpu_buffer_for_write();
-let mut writer = std140::Writer::new(target_buffer);
-
-let light_count = lights.len() as u32;
-writer.write(&light_count)?;
-
-// Crevice will automatically insert the required padding to align the
-// PointLight structure correctly. In this case, there will be 12 bytes of
-// padding between the length field and the light list.
-
-writer.write(lights.as_slice())?;
-
-unmap_gpu_buffer();
-
-```
-
-### Features
-
-* `std` (default): Enables [`std::io::Write`]-based structs.
-* `cgmath`: Enables support for types from cgmath.
-* `nalgebra`: Enables support for types from nalgebra.
-* `glam`: Enables support for types from glam.
-
-### Minimum Supported Rust Version (MSRV)
-
-Crevice supports Rust 1.74.0 and newer.
-
-[glsl-layout]: https://github.com/rustgd/glsl-layout
 
 [std140::AsStd140]: https://docs.rs/crevice/latest/crevice/std140/trait.AsStd140.html
 [std140::AsStd140::as_std140]: https://docs.rs/crevice/latest/crevice/std140/trait.AsStd140.html#method.as_std140
@@ -153,6 +102,8 @@ Crevice supports Rust 1.74.0 and newer.
 
 [`bytemuck::Pod`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Pod.html
 [`bytemuck::Zeroable`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Zeroable.html
+
+[glsl-layout]: https://docs.rs/glsl-layout/latest/glsl_layout/
 
 ## License
 

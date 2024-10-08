@@ -12,6 +12,8 @@
 [`bytemuck::Pod`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Pod.html
 [`bytemuck::Zeroable`]: https://docs.rs/bytemuck/latest/bytemuck/trait.Zeroable.html
 
+[glsl-layout]: https://docs.rs/glsl-layout/latest/glsl_layout/
+
 ## License
 
 Licensed under either of
