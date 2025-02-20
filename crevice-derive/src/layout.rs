@@ -166,7 +166,8 @@ pub fn emit(
     let struct_definition = quote! {
         #[derive(Debug, Clone, Copy)]
         #[repr(C)]
-        #[allow(non_snake_case)]
+        #[doc(hidden)]
+        #[allow(warnings)]
         #visibility struct #generated_name #ty_generics #where_clause {
             #generated_struct_fields
         }
@@ -228,6 +229,7 @@ pub fn emit(
         #struct_definition
 
         impl #impl_generics #generated_name #ty_generics #where_clause {
+            #[allow(warnings)]
             pub fn as_bytes(&self) -> &[u8] {
                 <#generated_name #ty_generics as #trait_path>::as_bytes(self)
             }
