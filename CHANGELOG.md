@@ -2,6 +2,18 @@
 
 ## Unreleased Changes
 
+## [0.18.0] - 2024-05-06
+* Upgraded to glam 0.30.
+* Upgraded to syn 2.0.
+* No longer generates warnings or rustdoc entries for generated structs.
+
+[0.18.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.18.0
+
+## [0.17.0] - 2024-05-06
+* Upgraded to glam 0.29.
+
+[0.17.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.17.0
+
 ## [0.16.0] - 2024-05-06
 * Upgraded to glam 0.27.
 
