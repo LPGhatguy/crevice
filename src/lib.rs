@@ -152,7 +152,7 @@ unmap_gpu_buffer();
 
 ## Minimum Supported Rust Version (MSRV)
 
-Crevice supports Rust 1.74.
+Crevice supports Rust 1.85 and higher.
 
 [glsl-layout]: https://github.com/rustgd/glsl-layout
 */
