@@ -2,6 +2,12 @@
 
 ## Unreleased Changes
 
+## [0.19.0] - 2024-05-06
+* Upgraded to glam 0.32.
+* Upgraded to nalgebra 0.34.
+
+[0.19.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.19.0
+
 ## [0.18.0] - 2024-05-06
 * Upgraded to glam 0.30.
 * Upgraded to syn 2.0.
