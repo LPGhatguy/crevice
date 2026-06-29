@@ -2,26 +2,32 @@
 
 ## Unreleased Changes
 
-## [0.20.0] - 2024-05-06
+## [0.20.1] - 2026-06-29
+* Fixed version references
+* Fixed botched dates in CHANGELOG.md
+
+[0.20.1]: https://github.com/LPGhatguy/crevice/releases/tag/v0.20.1
+
+## [0.20.0] - 2026-06-29
 * Upgraded to glam 0.33.
 * Upgraded to nalgebra 0.35.
 
 [0.20.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.20.0
 
-## [0.19.0] - 2024-05-06
+## [0.19.0] - 2026-03-30
 * Upgraded to glam 0.32.
 * Upgraded to nalgebra 0.34.
 
 [0.19.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.19.0
 
-## [0.18.0] - 2024-05-06
+## [0.18.0] - 2025-02-20
 * Upgraded to glam 0.30.
 * Upgraded to syn 2.0.
 * No longer generates warnings or rustdoc entries for generated structs.
 
 [0.18.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.18.0
 
-## [0.17.0] - 2024-05-06
+## [0.17.0] - 2024-10-08
 * Upgraded to glam 0.29.
 
 [0.17.0]: https://github.com/LPGhatguy/crevice/releases/tag/v0.17.0
