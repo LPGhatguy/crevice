@@ -133,9 +133,10 @@ pub fn emit(
             let field_ty = layout_version_of_ty(&field.ty);
             let pad_field_name = format_ident!("_pad{}", index);
             let pad_fn = &pad_fns[index];
+            let field_vis = &field.vis;
 
             quote! {
-                #field_name: #field_ty,
+                #field_vis #field_name: #field_ty,
                 #pad_field_name: [u8; #pad_fn()],
             }
         })
